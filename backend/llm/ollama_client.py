@@ -30,7 +30,7 @@ You are helpful, professional, and trustworthy. You represent the Ministry."""
 
 BLACKBUCK_SYSTEM_PROMPT = BLACKBUCK_SYSTEM_PROMPT_DEMO
 
-TEMPERATURE = {"demo": 0.9, "realistic": 0.7}
+TEMPERATURE = {"demo": 0.5, "realistic": 0.7}
 
 
 async def chat(messages: list[dict], system_prompt: str = BLACKBUCK_SYSTEM_PROMPT, mode: str = "demo") -> str:

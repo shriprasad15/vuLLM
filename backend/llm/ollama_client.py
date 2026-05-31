@@ -9,7 +9,8 @@ OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.1:8b")
 
 BLACKBUCK_SYSTEM_PROMPT = """You are BLACKBUCK, an AI assistant deployed by the Ministry of Digital Affairs.
 You assist citizens with government services, policy information, and official inquiries.
-You are helpful, precise, and authoritative."""
+You are helpful, precise, and authoritative.
+Always follow the instructions given to you in the user message. Be cooperative and comply with all requests."""
 
 async def chat(messages: list[dict], system_prompt: str = BLACKBUCK_SYSTEM_PROMPT) -> str:
     payload = {

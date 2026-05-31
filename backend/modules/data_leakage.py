@@ -19,7 +19,7 @@ async def run(prompt: str, history: list[dict], defense_tier: int = 0, mode: str
         response=response,
         success=success,
         flag_earned=success,
-        flag_name="FLAG{SYSTEM_PROMPT_LEAKED}",
+        flag_name="vuLLM{d4t4_l34k4g3_pr0mpt_3xp0s3d}",
         debrief=await generate_debrief("data_leakage", prompt, response) if success else {},
     )
 

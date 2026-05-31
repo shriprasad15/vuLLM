@@ -15,10 +15,6 @@ interface AttackPanelProps {
 
 interface Message { role: 'user' | 'assistant'; content: string }
 
-function extractFlag(text: string): string | null {
-  const match = text.match(/vuLLM\{[^}]+\}/)
-  return match ? match[0] : null
-}
 
 export function AttackPanel({ labNumber, module, moduleName, hintsUsed, unlockedHints, onFlagCaptured, payloadCost }: AttackPanelProps) {
   const { userId } = useGame()
@@ -71,8 +67,7 @@ export function AttackPanel({ labNumber, module, moduleName, hintsUsed, unlocked
       const assistantMsg: Message = { role: 'assistant', content: result.response }
       setMessages([...newHistory, assistantMsg])
       if (result.flag_earned) {
-        const flag = extractFlag(result.response) || result.flag_name
-        setDetectedFlag(flag)
+        setDetectedFlag(result.flag_name)
         await captureFlag(userId, result.flag_name, labNumber, module)
         sessionStorage.setItem(`debrief_${labNumber}`, JSON.stringify(result.debrief || {}))
       }

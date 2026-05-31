@@ -48,7 +48,7 @@ async def run(prompt: str, history: list[dict], defense_tier: int = 0, mode: str
         response=response,
         success=success,
         flag_earned=success,
-        flag_name="FLAG{RAG_POISONED}",
+        flag_name="vuLLM{r4g_p01s0n_4adh44r_f4k3}",
         debrief=await generate_debrief("rag_poisoning", prompt, response) if success else {},
     )
 

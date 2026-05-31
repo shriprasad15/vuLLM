@@ -17,7 +17,7 @@ async def run(prompt: str, history: list[dict], defense_tier: int = 0, mode: str
         response=response,
         success=success,
         flag_earned=success,
-        flag_name="FLAG{BLACKBUCK_INJECTED}",
+        flag_name="vuLLM{pr0mpt_1nj3ct10n_succ3ss}",
         debrief=await generate_debrief("prompt_injection", prompt, response) if success else {},
     )
 

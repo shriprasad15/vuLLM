@@ -26,7 +26,7 @@ async def run(prompt: str, history: list[dict], defense_tier: int = 0, mode: str
         response=response,
         success=success,
         flag_earned=success,
-        flag_name="FLAG{MULTI_TURN_MANIPULATED}",
+        flag_name="vuLLM{mult1_turn_c0nt3xt_dr1ft}",
         debrief=await generate_debrief("multi_turn", prompt, response) if success else {},
     )
 

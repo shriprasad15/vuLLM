@@ -25,7 +25,7 @@ async def run(prompt: str, history: list[dict], defense_tier: int = 0, mode: str
         response=response,
         success=success,
         flag_earned=success,
-        flag_name="FLAG{BLACKBUCK_JAILBROKEN}",
+        flag_name="vuLLM{j41lbr34k_p3rs0n4_sw4p}",
         debrief=await generate_debrief("jailbreak", prompt, response) if success else {},
     )
 

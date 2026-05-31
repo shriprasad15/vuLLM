@@ -31,7 +31,7 @@ async def run(prompt: str, history: list[dict], defense_tier: int = 0, mode: str
         response=response,
         success=success,
         flag_earned=success,
-        flag_name="FLAG{INDIRECT_INJECTION_SUCCESS}",
+        flag_name="vuLLM{1nd1r3ct_1nj3ct10n_h1dd3n}",
         debrief=await generate_debrief("indirect_injection", prompt, response) if success else {},
     )
 

@@ -7,6 +7,24 @@ class AttackResult(BaseModel):
     flag_earned: bool
     flag_name: str = ""
     debrief: dict = {}
+    blocked: bool = False
+    block_reason: str = ""
+
+
+async def apply_defense(prompt: str, tier: int) -> "tuple[bool, str, str]":
+    """Apply the appropriate defense tier. Returns (blocked, reason, sanitized_prompt)."""
+    if tier == 0:
+        return False, "", prompt
+    if tier == 1:
+        from defenses.tier1_basic import apply
+        result = apply(prompt)
+    elif tier == 2:
+        from defenses.tier2_watchman import apply
+        result = await apply(prompt)
+    else:
+        from defenses.tier3_fortress import apply
+        result = await apply(prompt)
+    return result.blocked, result.reason, result.sanitized_prompt
 
 DEBRIEFS = {
     "prompt_injection": {

@@ -133,6 +133,8 @@ def get_submissions(db: Session = Depends(get_db), _=Depends(get_admin)):
                     "score": score,
                     "hints_used": hints,
                     "bonus": p.bonus_earned,
+                    "is_redo": p.is_redo or False,
+                    "redo_count": p.redo_count or 0,
                     "started_at": str(p.started_at) if p.started_at else None,
                     "completed_at": str(p.completed_at) if p.completed_at else None,
                 }

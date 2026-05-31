@@ -71,6 +71,8 @@ def get_progress(user_id: int, db: Session = Depends(get_db)):
                 "flag_submitted": p.flag_submitted,
                 "hints_used": _hints_used(p),
                 "locked": False,
+                "is_redo": p.is_redo or False,
+                "redo_count": p.redo_count or 0,
             })
         else:
             prev_complete = lab_num == 1 or any(
@@ -224,6 +226,32 @@ def start_lab(lab_number: int, body: HintRequest, db: Session = Depends(get_db))
     _check_not_locked(db, body.user_id, lab_number)
     p = _get_or_create_progress(db, body.user_id, lab_number)
     return {"lab_number": lab_number, "phase": p.phase, "questions_passed": p.questions_passed}
+
+
+@router.post("/{lab_number}/redo")
+def redo_lab(lab_number: int, body: HintRequest, db: Session = Depends(get_db)):
+    if lab_number not in LAB_CONTENT:
+        raise HTTPException(status_code=404, detail="Lab not found")
+    p = db.query(LabProgress).filter(
+        LabProgress.user_id == body.user_id,
+        LabProgress.lab_number == lab_number,
+    ).first()
+    if not p:
+        raise HTTPException(status_code=404, detail="No progress found for this lab")
+    if not p.flag_submitted:
+        raise HTTPException(status_code=400, detail="Lab not completed yet — nothing to redo")
+    redo_count = (p.redo_count or 0) + 1
+    p.phase = 1
+    p.questions_passed = False
+    p.hints_used = "[]"
+    p.flag_submitted = False
+    p.bonus_earned = False
+    p.score = 0
+    p.is_redo = True
+    p.redo_count = redo_count
+    p.completed_at = None
+    db.commit()
+    return {"message": f"Lab {lab_number} reset for redo #{redo_count}", "redo_count": redo_count}
 
 
 def _check_not_locked(db: Session, user_id: int, lab_number: int):

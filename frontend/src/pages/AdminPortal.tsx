@@ -210,7 +210,10 @@ export function AdminPortal() {
                         return (
                           <td key={n} className="px-3 py-2 text-center">
                             {lab?.complete ? (
-                              <span className="text-green-400">{lab.score}</span>
+                              <span className={lab.is_redo ? 'text-orange-400' : 'text-green-400'}>
+                                {lab.score}
+                                {lab.is_redo && <span className="ml-1 text-orange-400 text-xs">↺</span>}
+                              </span>
                             ) : lab?.score > 0 ? (
                               <span className="text-amber-400">{lab.score}</span>
                             ) : (

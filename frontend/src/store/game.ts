@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-export interface LabStatus {
+export type LabStatus = {
   lab_number: number
   title: string
   phase: number       // 0=locked, 1=learn, 2=objective, 3=attempt, 4=debrief, 5=complete
@@ -10,6 +10,8 @@ export interface LabStatus {
   flag_submitted: boolean
   hints_used: (number | string)[]
   locked?: boolean
+  is_redo?: boolean
+  redo_count?: number
 }
 
 interface GameState {

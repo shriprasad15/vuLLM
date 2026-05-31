@@ -103,6 +103,15 @@ export async function submitFlag(labNumber: number, userId: number, flag: string
   return r.json()
 }
 
+export async function redoLab(labNumber: number, userId: number) {
+  const r = await fetch(`/api/labs/${labNumber}/redo`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ user_id: userId }),
+  })
+  return r.json()
+}
+
 export async function adminGetSubmissions(token: string) {
   const r = await fetch(`${BASE}/admin/submissions`, {
     headers: { Authorization: `Bearer ${token}` },

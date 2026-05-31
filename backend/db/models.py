@@ -60,6 +60,8 @@ class LabProgress(Base):
     flag_submitted = Column(Boolean, default=False)
     score = Column(Integer, default=0)
     bonus_earned = Column(Boolean, default=False)
+    is_redo = Column(Boolean, default=False)          # True if student redid this lab
+    redo_count = Column(Integer, default=0)           # how many times redone
     started_at = Column(DateTime, default=func.now())
     completed_at = Column(DateTime, nullable=True)
     __table_args__ = (UniqueConstraint("user_id", "lab_number", name="uq_user_lab"),)

@@ -39,8 +39,8 @@ export function DebriefPhase({ labNumber, title, debrief, score, bonus, onComple
         <p className="text-slate-400 font-mono text-sm">You will learn how to patch this vulnerability — adding the guardrails that would have stopped your own attack.</p>
       </div>
 
-      <button onClick={onComplete} className="w-full bg-amber-400 hover:bg-amber-300 text-black font-bold font-mono py-3 rounded transition-colors">
-        {labNumber < 6 ? `PROCEED TO LAB ${labNumber + 1} →` : 'COMPLETE PART A →'}
+      <button onClick={onComplete} className={`w-full font-bold font-mono py-3 rounded transition-colors ${labNumber < 6 ? 'bg-amber-400 hover:bg-amber-300 text-black' : 'bg-green-500 hover:bg-green-400 text-black text-lg'}`}>
+        {labNumber < 6 ? `PROCEED TO LAB ${labNumber + 1} →` : '🏆 COMPLETE PART A — VIEW RESULTS'}
       </button>
     </div>
   )

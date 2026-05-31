@@ -38,6 +38,7 @@ export function PlayerPortal() {
   const [labScore, setLabScore] = useState(0)
   const [labBonus, setLabBonus] = useState(false)
   const [showLeaderboard, setShowLeaderboard] = useState(false)
+  const [showPartAComplete, setShowPartAComplete] = useState(false)
 
   useEffect(() => {
     if (!userId) return
@@ -118,6 +119,8 @@ export function PlayerPortal() {
   function handleLabComplete() {
     if (currentLab < 6) {
       setCurrentLab(currentLab + 1)
+    } else {
+      setShowPartAComplete(true)
     }
     refreshProgress()
   }
@@ -141,6 +144,67 @@ export function PlayerPortal() {
             BEGIN ASSIGNMENT
           </button>
         </div>
+      </div>
+    )
+  }
+
+  if (showPartAComplete) {
+    const totalScore = labProgress.reduce((sum, l) => sum + (l.score || 0), 0)
+    return (
+      <div className="min-h-screen bg-slate-950 flex">
+        <LabSidebar onSelectLab={(n) => { setShowPartAComplete(false); handleSelectLab(n) }} />
+        <main className="flex-1 overflow-y-auto flex items-center justify-center p-8">
+          <div className="max-w-2xl w-full space-y-8">
+            <div className="text-center space-y-3">
+              <div className="text-6xl">🏆</div>
+              <div className="text-amber-400 font-mono text-xs tracking-widest">OPERATION: vuLLM</div>
+              <h1 className="text-white font-mono text-4xl font-bold">PART A COMPLETE</h1>
+              <p className="text-slate-400 font-mono text-sm">You have successfully completed all 6 offensive labs.</p>
+            </div>
+
+            <div className="bg-green-900/30 border border-green-500 rounded-lg p-6 text-center">
+              <div className="text-green-400 font-mono text-sm mb-1">FINAL SCORE — PART A</div>
+              <div className="text-amber-400 font-mono text-5xl font-bold">{totalScore}</div>
+              <div className="text-slate-400 font-mono text-xs mt-1">out of 600 points</div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              {labProgress.map(l => (
+                <div key={l.lab_number} className="bg-slate-900 border border-green-800 rounded p-3 flex items-center justify-between">
+                  <div>
+                    <div className="text-green-400 font-mono text-xs">Lab {l.lab_number}</div>
+                    <div className="text-slate-300 font-mono text-xs">{l.title}</div>
+                  </div>
+                  <div className="text-amber-400 font-mono text-sm font-bold">{l.score}pts</div>
+                </div>
+              ))}
+            </div>
+
+            <div className="bg-blue-950/40 border border-blue-600 rounded-lg p-6 text-center space-y-3">
+              <div className="text-blue-400 font-mono text-sm tracking-widest">PART B — DEFENCE</div>
+              <p className="text-slate-300 font-mono text-sm">
+                You have seen how BLACKBUCK can be attacked. In Part B, you will learn to defend it —
+                adding the guardrails that would have stopped each of your own attacks.
+              </p>
+              <div className="text-slate-500 font-mono text-xs">Coming soon — check back for updates.</div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowLeaderboard(true)}
+                className="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-bold font-mono py-3 rounded border border-slate-600 transition-colors"
+              >
+                VIEW LEADERBOARD
+              </button>
+              <button
+                onClick={() => { setShowPartAComplete(false); handleSelectLab(1) }}
+                className="flex-1 bg-amber-400 hover:bg-amber-300 text-black font-bold font-mono py-3 rounded transition-colors"
+              >
+                REVIEW LABS
+              </button>
+            </div>
+          </div>
+        </main>
       </div>
     )
   }

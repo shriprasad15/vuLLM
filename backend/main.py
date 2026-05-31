@@ -4,6 +4,7 @@ from db.database import engine
 from db import models
 from ws.manager import manager
 from routers import auth, players, attacks, flags, defenses, admin
+from routers import labs
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -23,6 +24,7 @@ app.include_router(attacks.router, prefix="/attacks")
 app.include_router(flags.router, prefix="/flags")
 app.include_router(defenses.router, prefix="/defenses")
 app.include_router(admin.router, prefix="/admin")
+app.include_router(labs.router, prefix="/labs")
 
 @app.websocket("/ws/admin")
 async def ws_admin(websocket: WebSocket):

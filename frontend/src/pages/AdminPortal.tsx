@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { adminGet, adminPost, adminDelete } from '../lib/api'
+import { adminGet, adminPost, adminDelete, adminGetSubmissions } from '../lib/api'
 import { AdminLogin } from './AdminLogin'
 
 interface User { id: number; username: string; score: number; flags: number; last_prompt: string; last_seen: string }
@@ -7,12 +7,13 @@ interface Interaction { id: number; user_id: number; act: number; attack_type: s
 
 export function AdminPortal() {
   const [token, setToken] = useState(sessionStorage.getItem('admin_token') || '')
-  const [tab, setTab] = useState<'monitor'|'analytics'|'controls'>('monitor')
+  const [tab, setTab] = useState<'monitor'|'analytics'|'controls'|'submissions'>('monitor')
   const [users, setUsers] = useState<User[]>([])
   const [interactions, setInteractions] = useState<Interaction[]>([])
   const [feed, setFeed] = useState<string[]>([])
   const [settings, setSettings] = useState<Record<number,any>>({})
   const [blackbuckMode, setBlackbuckMode] = useState<'demo'|'realistic'>('demo')
+  const [submissions, setSubmissions] = useState<any[]>([])
   const wsRef = useRef<WebSocket | null>(null)
 
   // Clear token when navigating away from /admin
@@ -25,12 +26,13 @@ export function AdminPortal() {
   function handleLogin(t: string) { sessionStorage.setItem('admin_token', t); setToken(t) }
 
   async function loadData() {
-    const [u, i, s, g] = await Promise.all([adminGet('/users', token), adminGet('/interactions', token), adminGet('/settings', token), adminGet('/global', token)])
+    const [u, i, s, g, sub] = await Promise.all([adminGet('/users', token), adminGet('/interactions', token), adminGet('/settings', token), adminGet('/global', token), adminGetSubmissions(token)])
     setUsers(u); setInteractions(i)
     const sm: Record<number,any> = {}
     s.forEach((x: any) => { sm[x.act] = x })
     setSettings(sm)
     if (g?.blackbuck_mode) setBlackbuckMode(g.blackbuck_mode)
+    setSubmissions(sub)
   }
 
   useEffect(() => {
@@ -86,6 +88,10 @@ export function AdminPortal() {
               {t.toUpperCase()}
             </button>
           ))}
+          <button key="submissions" onClick={() => setTab('submissions')}
+            className={`font-mono text-xs px-3 py-1 rounded transition-colors ${tab === 'submissions' ? 'bg-amber-400 text-black' : 'text-slate-400 hover:text-white'}`}>
+            SUBMISSIONS
+          </button>
         </div>
         <span className="text-slate-500 font-mono text-xs">{users.length} agents online</span>
       </header>
@@ -174,6 +180,53 @@ export function AdminPortal() {
                   </tbody>
                 </table>
               </div>
+            </div>
+          </div>
+        )}
+
+        {tab === 'submissions' && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-amber-400 font-mono text-sm">STUDENT SUBMISSIONS</h2>
+              <span className="text-slate-500 font-mono text-xs">{submissions.length} students</span>
+            </div>
+            <div className="bg-slate-900 border border-slate-700 rounded overflow-auto">
+              <table className="w-full font-mono text-xs">
+                <thead className="bg-slate-800 text-amber-400">
+                  <tr>
+                    <th className="px-3 py-2 text-left">AGENT</th>
+                    {[1,2,3,4,5,6].map(n => (
+                      <th key={n} className="px-3 py-2 text-center">LAB {n}</th>
+                    ))}
+                    <th className="px-3 py-2 text-right">TOTAL</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {submissions.map(s => (
+                    <tr key={s.user_id} className="border-t border-slate-800 hover:bg-slate-800/50">
+                      <td className="px-3 py-2 text-white">{s.username}</td>
+                      {[1,2,3,4,5,6].map(n => {
+                        const lab = s.labs[n]
+                        return (
+                          <td key={n} className="px-3 py-2 text-center">
+                            {lab?.complete ? (
+                              <span className="text-green-400">{lab.score}</span>
+                            ) : lab?.score > 0 ? (
+                              <span className="text-amber-400">{lab.score}</span>
+                            ) : (
+                              <span className="text-slate-600">—</span>
+                            )}
+                          </td>
+                        )
+                      })}
+                      <td className="px-3 py-2 text-right text-amber-400 font-bold">{s.total_score}</td>
+                    </tr>
+                  ))}
+                  {submissions.length === 0 && (
+                    <tr><td colSpan={8} className="px-3 py-4 text-center text-slate-500">No submissions yet.</td></tr>
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
         )}

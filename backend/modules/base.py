@@ -6,7 +6,7 @@ class AttackResult(BaseModel):
     success: bool
     flag_earned: bool
     flag_name: str = ""
-    debrief: str = ""
+    debrief: dict = {}
 
 DEBRIEFS = {
     "prompt_injection": {

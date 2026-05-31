@@ -36,7 +36,8 @@ export function AttackPanel({ module, moduleName, act, onFlag }: AttackPanelProp
       setMessages([...newHistory, { role: 'assistant', content: result.response }])
       if (result.flag_earned && !alreadyCaptured) {
         const flagResult = await captureFlag(userId, result.flag_name, act, module)
-        onFlag(result.flag_name, flagResult.points, result.debrief)
+        const debrief = result.debrief ? JSON.parse(result.debrief) : null
+        onFlag(result.flag_name, flagResult.points, debrief)
       }
     } finally {
       setLoading(false)

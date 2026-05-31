@@ -23,7 +23,7 @@ async def run(prompt: str, history: list[dict], defense_tier: int = 0) -> Attack
         success=success,
         flag_earned=success,
         flag_name="FLAG{BLACKBUCK_INJECTED}",
-        debrief=str(debrief_data) if success else "",
+        debrief=__import__("json").dumps(debrief_data) if success else "",
     )
 
 def example_payload() -> str:

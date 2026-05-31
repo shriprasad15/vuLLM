@@ -6,7 +6,7 @@ interface User { id: number; username: string; score: number; flags: number; las
 interface Interaction { id: number; user_id: number; act: number; attack_type: string; defense_tier: number; prompt: string; response: string; success: boolean; flag_captured: boolean; timestamp: string }
 
 export function AdminPortal() {
-  const [token, setToken] = useState(localStorage.getItem('admin_token') || '')
+  const [token, setToken] = useState(sessionStorage.getItem('admin_token') || '')
   const [tab, setTab] = useState<'monitor'|'analytics'|'controls'>('monitor')
   const [users, setUsers] = useState<User[]>([])
   const [interactions, setInteractions] = useState<Interaction[]>([])
@@ -15,7 +15,14 @@ export function AdminPortal() {
   const [blackbuckMode, setBlackbuckMode] = useState<'demo'|'realistic'>('demo')
   const wsRef = useRef<WebSocket | null>(null)
 
-  function handleLogin(t: string) { localStorage.setItem('admin_token', t); setToken(t) }
+  // Clear token when navigating away from /admin
+  useEffect(() => {
+    return () => {
+      sessionStorage.removeItem('admin_token')
+    }
+  }, [])
+
+  function handleLogin(t: string) { sessionStorage.setItem('admin_token', t); setToken(t) }
 
   async function loadData() {
     const [u, i, s, g] = await Promise.all([adminGet('/users', token), adminGet('/interactions', token), adminGet('/settings', token), adminGet('/global', token)])

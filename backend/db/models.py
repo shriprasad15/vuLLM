@@ -48,3 +48,18 @@ class GlobalSettings(Base):
     id = Column(Integer, primary_key=True)
     # "demo" = naive/compliant BLACKBUCK, "realistic" = production-grade guardrails
     blackbuck_mode = Column(String, default="demo")
+
+class LabProgress(Base):
+    __tablename__ = "lab_progress"
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    lab_number = Column(Integer, nullable=False)  # 1-6
+    phase = Column(Integer, default=1)            # 1=Learn, 2=Objective, 3=Attempt, 4=Debrief, 5=Complete
+    questions_passed = Column(Boolean, default=False)
+    hints_used = Column(String, default="[]")     # JSON list e.g. [1, 2] or ["payload"]
+    flag_submitted = Column(Boolean, default=False)
+    score = Column(Integer, default=0)
+    bonus_earned = Column(Boolean, default=False)
+    started_at = Column(DateTime, default=func.now())
+    completed_at = Column(DateTime, nullable=True)
+    __table_args__ = (UniqueConstraint("user_id", "lab_number", name="uq_user_lab"),)

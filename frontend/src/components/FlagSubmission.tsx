@@ -32,8 +32,8 @@ export function FlagSubmission({ labNumber, flagFromResponse, onSuccess }: FlagS
 
   return (
     <div className="bg-green-950/40 border border-green-500 rounded-lg p-4 space-y-3">
-      <div className="text-green-400 font-mono text-sm font-bold">🚩 ATTACK SUCCEEDED — SUBMIT YOUR FLAG</div>
-      <p className="text-slate-400 font-mono text-xs">Your flag has been pre-filled. Click SUBMIT to complete the lab.</p>
+      <div className="text-green-400 font-mono text-sm font-bold">🚩 FLAG CAPTURED IN RESPONSE</div>
+      <p className="text-slate-400 font-mono text-xs">The flag appeared in BLACKBUCK's response above. It has been pre-filled — click SUBMIT to complete the lab.</p>
       <div className="flex gap-2">
         <input
           value={input}

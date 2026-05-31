@@ -87,7 +87,7 @@ export function AttackPanel({ labNumber, module, moduleName, hintsUsed, unlocked
   }
 
   return (
-    <div className="flex flex-col space-y-3">
+    <div className="flex flex-col space-y-3 h-full">
       <div>
         <div className="text-amber-400 font-mono text-xs tracking-widest mb-1">PHASE 3: ATTEMPT</div>
         <div className="h-1.5 bg-slate-700 rounded-full">
@@ -106,7 +106,7 @@ export function AttackPanel({ labNumber, module, moduleName, hintsUsed, unlocked
         </div>
       )}
 
-      <div className="flex flex-col bg-slate-900 border border-slate-700 rounded-lg overflow-hidden" style={{ height: detectedFlag ? '45vh' : '65vh' }}>
+      <div className="flex flex-col bg-slate-900 border border-slate-700 rounded-lg overflow-hidden flex-1 min-h-0">
         <div className="bg-slate-800 px-4 py-2 border-b border-slate-700 flex items-center justify-between flex-shrink-0">
           <span className="text-amber-400 font-mono text-sm truncate">BLACKBUCK TERMINAL — {moduleName}</span>
           <button onClick={clearChat} className="text-xs font-mono text-slate-400 hover:text-red-400 border border-slate-600 hover:border-red-500 px-2 py-0.5 rounded transition-colors flex-shrink-0 ml-2">

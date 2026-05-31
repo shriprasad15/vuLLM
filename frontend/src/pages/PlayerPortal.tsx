@@ -65,6 +65,7 @@ export function PlayerPortal() {
       const prog = labProgress.find(l => l.lab_number === labNum)
       if (prog?.flag_submitted) {
         setLocalPhase(4)
+        setLabScore(prog.score ?? 0)  // restore score when viewing a completed lab
       } else if (prog?.questions_passed) {
         setLocalPhase(2)
       } else {
@@ -192,7 +193,7 @@ export function PlayerPortal() {
             onHintUnlocked={handleHintUnlocked}
           />
         ) : localPhase === 3 ? (
-          <div className="flex h-screen overflow-hidden">
+          <div className="flex overflow-hidden" style={{ height: 'calc(100vh - 0px)' }}>
             {/* Left panel — problem statement */}
             <div className="w-96 flex-shrink-0 border-r border-slate-700 overflow-y-auto p-6 space-y-5">
               <div>
@@ -241,8 +242,8 @@ export function PlayerPortal() {
                 })}
               </div>
             </div>
-            {/* Right panel — terminal */}
-            <div className="flex-1 overflow-hidden p-4">
+            {/* Right panel — terminal, fills remaining height */}
+            <div className="flex-1 flex flex-col overflow-hidden p-4">
               <AttackPanel
                 labNumber={currentLab}
                 module={MODULE_MAP[currentLab]}

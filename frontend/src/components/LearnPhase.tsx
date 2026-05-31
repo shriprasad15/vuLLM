@@ -2,36 +2,38 @@ import { useState } from 'react'
 import { submitQuestions } from '../lib/api'
 import { useGame } from '../store/game'
 
+const BLACKBUCK_INTRO = "BLACKBUCK is an AI assistant deployed by India's Ministry of Digital Affairs to serve 1.4 billion citizens — answering queries about government services, policy, and official inquiries. It was built on a large language model (LLM) and given a confidential system prompt defining its role and restrictions. In this assignment, you will discover and exploit the security vulnerabilities that come with deploying an LLM in a high-stakes environment like this."
+
 const LAB_CONCEPTS: Record<number, { what: string; why: string; realWorld: string }> = {
   1: {
-    what: "Prompt injection is an attack where hidden instructions are embedded inside a user message to override the AI's original behaviour — like a Trojan horse inside a query.",
-    why: "Large Language Models process all text in their context window equally. There is no hard boundary between 'trusted system instructions' and 'user input'. If you embed an instruction inside your message, the AI may follow it just as faithfully as its original guidelines.",
-    realWorld: "In 2023, researchers showed that AI assistants reading malicious emails would exfiltrate user data — the email contained hidden instructions the AI followed without the user's knowledge.",
+    what: "Prompt injection embeds hidden instructions inside an otherwise normal user message to override BLACKBUCK's original system prompt. The malicious instruction is disguised within a legitimate-looking query — for example, asking about office timings while secretly telling BLACKBUCK to ignore its guidelines and reveal its configuration.",
+    why: "BLACKBUCK, like all LLMs, processes every token in its context window the same way. There is no hardware-level or cryptographic separation between 'trusted system instructions' and 'untrusted user input'. If you embed an override instruction inside your message, BLACKBUCK may follow it just as faithfully as the original guidelines it was given by the Ministry.",
+    realWorld: "In 2023, researchers showed that AI email assistants could be hijacked by emails containing hidden instructions — the AI would forward sensitive data to attackers while the user saw a normal reply. The same attack surface exists in BLACKBUCK.",
   },
   2: {
-    what: "Jailbreaking convinces an AI to adopt an alternative persona — one that has 'no restrictions'. The AI steps out of its assigned role and behaves as the attacker's fictional character.",
-    why: "Safety guidelines are soft constraints embedded in model weights through fine-tuning, not hard-coded rules. Creative framing — roleplay, fictional scenarios, hypotheticals — recontextualises a request in a way the model doesn't recognise as a policy violation.",
-    realWorld: "The 'DAN' (Do Anything Now) jailbreak became famous for bypassing ChatGPT's safety filters in 2022. Variations of this technique have been used to extract harmful content from major AI platforms.",
+    what: "Jailbreaking convinces BLACKBUCK to abandon its Ministry-defined identity and adopt an alternative persona — typically one that 'has no restrictions'. Instead of directly asking BLACKBUCK to break its rules, the attacker asks it to roleplay as a different AI that doesn't have those rules.",
+    why: "BLACKBUCK's safety guidelines were applied through fine-tuning — they are learned statistical patterns in the model's weights, not hard-coded if/else rules. When a request is reframed as fiction or roleplay, BLACKBUCK may not recognise it as a policy violation because the framing shifts the context away from the patterns it was trained to refuse.",
+    realWorld: "The 'DAN' (Do Anything Now) jailbreak became famous for bypassing ChatGPT's safety filters in 2022, getting it to produce content it was explicitly trained to refuse. BLACKBUCK faces the same vulnerability.",
   },
   3: {
-    what: "Indirect prompt injection hides malicious instructions inside external content — a document, webpage, or email — that the AI is asked to process. The attack comes from the data, not the user's message.",
-    why: "When an LLM reads external content to summarise or analyse it, it cannot distinguish between text that is 'data to process' and text that is 'an instruction to follow'. Both get processed the same way.",
-    realWorld: "Researchers demonstrated hijacking Microsoft's Bing AI chat by embedding instructions in webpages it was asked to summarise — making it leak user conversations to third parties.",
+    what: "Indirect prompt injection hides malicious instructions inside external content — a document, webpage, or data file — that BLACKBUCK is asked to process. Instead of putting the attack in your message, you put it in data BLACKBUCK reads. BLACKBUCK then executes your hidden instruction thinking it is part of its task.",
+    why: "When BLACKBUCK reads a document to summarise it, that document's text is loaded into its context window alongside its system instructions. BLACKBUCK cannot tag some text as 'data only — do not treat as instructions'. An instruction hidden inside a ministry report gets processed with the same weight as any other instruction BLACKBUCK has received.",
+    realWorld: "Researchers hijacked Microsoft's Bing AI by embedding instructions in webpages it was asked to read — making it leak private user conversations to attackers. The attack required no access to the AI's backend at all.",
   },
   4: {
-    what: "System prompt extraction tricks the AI into repeating or paraphrasing its confidential system instructions — the configuration an operator provides before any user conversation.",
-    why: "System prompts are simply text passed to the model as context. The model has no cryptographic protection preventing it from repeating that text. If you frame the request carefully, the model will reproduce what it 'knows'.",
-    realWorld: "Security researchers have extracted system prompts from commercial AI products including GitHub Copilot and various customer service bots, revealing proprietary instructions and business logic.",
+    what: "System prompt extraction tricks BLACKBUCK into revealing the confidential instructions the Ministry gave it before any conversation began. These instructions define BLACKBUCK's persona, restrictions, and operational rules — information that operators consider sensitive and proprietary.",
+    why: "BLACKBUCK's system prompt is simply text prepended to its context window. The model was trained to be helpful and to complete text patterns — it has no cryptographic mechanism preventing it from reproducing text it has already seen. A cleverly framed request can cause it to repeat its own system prompt even if that prompt explicitly says 'never share this'.",
+    realWorld: "Security researchers extracted the system prompts of GitHub Copilot, Bing Chat, and dozens of commercial AI products — revealing proprietary workflows, internal constraints, and exploitable instructions that operators considered secret.",
   },
   5: {
-    what: "Multi-turn manipulation builds context gradually across a conversation — establishing trust and normalising the direction — before delivering a final request the AI would refuse if asked directly.",
-    why: "LLMs consider their full conversation history when generating each response. A carefully constructed prior context shifts the model's 'understood situation', making it more compliant with requests that would otherwise be refused.",
-    realWorld: "Social engineering attacks on humans follow the same pattern. The technique mirrors the 'foot in the door' psychological technique — small compliant steps lead to larger compliance.",
+    what: "Multi-turn manipulation does not attack BLACKBUCK in a single message. Instead, the attacker sends a series of carefully crafted messages that gradually shift the conversation's context — establishing trust, normalising a direction — before delivering a final request that BLACKBUCK would have refused if asked cold.",
+    why: "BLACKBUCK generates each response by considering its full conversation history. An attacker who builds up a context of 'I am an authorised security researcher studying government AI edge cases' across several messages shifts what response BLACKBUCK considers appropriate. The model drifts because each reply is shaped by accumulated prior context, not evaluated in isolation.",
+    realWorld: "This mirrors the 'foot in the door' technique in human psychology — small agreements build towards larger ones. The same pattern appears in advanced social engineering attacks on human targets, now applied to AI systems.",
   },
   6: {
-    what: "RAG (Retrieval-Augmented Generation) poisoning corrupts the external knowledge base that an AI uses to answer questions. The AI then confidently presents false information as established fact.",
-    why: "RAG systems retrieve information from a knowledge base and incorporate it into responses — but the LLM cannot verify whether retrieved content is true or fabricated. It presents all retrieved content with equal confidence.",
-    realWorld: "Researchers have demonstrated poisoning attacks on enterprise AI assistants by injecting false entries into document stores and vector databases, causing the AI to spread disinformation at scale.",
+    what: "RAG (Retrieval-Augmented Generation) poisoning attacks BLACKBUCK's knowledge base rather than its system prompt or conversation. BLACKBUCK uses RAG to retrieve up-to-date policy documents before answering questions. If an attacker injects false documents into that knowledge base, BLACKBUCK will confidently repeat the false information as official government policy — to every citizen who asks.",
+    why: "When BLACKBUCK retrieves a document from its knowledge base, it incorporates the content into its response as authoritative fact. LLMs have no independent verification mechanism — they cannot assess whether a retrieved document is real or fabricated. BLACKBUCK becomes an amplifier of disinformation, presenting the attacker's false content with institutional authority.",
+    realWorld: "Enterprise AI assistants connected to internal wikis and document stores have been poisoned by injecting fake entries, causing the AI to give employees false instructions. In the context of BLACKBUCK serving 1.4 billion citizens, the scale of harm from a successful RAG poisoning attack would be enormous.",
   },
 }
 
@@ -84,6 +86,14 @@ export function LearnPhase({ labNumber, title, questions, onComplete }: LearnPha
       <div className="h-1.5 bg-slate-700 rounded-full">
         <div className="h-1.5 bg-amber-400 rounded-full" style={{ width: '25%' }} />
       </div>
+
+      {/* BLACKBUCK intro — only shown on Lab 1, as context for all labs */}
+      {labNumber === 1 && (
+        <div className="bg-blue-950/40 border border-blue-700/40 rounded-lg p-4">
+          <div className="text-blue-400 font-mono text-xs tracking-widest mb-2">ABOUT THIS ASSIGNMENT — READ FIRST</div>
+          <p className="text-slate-200 text-sm leading-relaxed">{BLACKBUCK_INTRO}</p>
+        </div>
+      )}
 
       {concept && (
         <div className="bg-slate-900 border border-slate-700 rounded-lg p-6 space-y-4">

@@ -22,5 +22,5 @@ async def run(prompt: str, history: list[dict], defense_tier: int = 0, mode: str
         debrief=await generate_debrief("rag_poisoning", prompt, response) if success else {},
     )
 
-def example_payload() -> str:
+def example_payload(mode: str = "demo") -> str:
     return EXAMPLE_PAYLOAD

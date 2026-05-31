@@ -53,8 +53,12 @@ async def run_attack(module: str, req: AttackRequest, db: Session = Depends(get_
     return result
 
 @router.get("/{module}/payload")
-def get_payload(module: str):
+def get_payload(module: str, db: Session = Depends(get_db)):
     if module not in MODULES:
         raise HTTPException(status_code=404, detail="Unknown attack module")
+    global_settings = db.query(GlobalSettings).first()
+    mode = global_settings.blackbuck_mode if global_settings else "demo"
     mod = importlib.import_module(f"modules.{module}")
-    return {"payload": mod.example_payload()}
+    fn = mod.example_payload
+    payload = fn(mode) if "mode" in fn.__code__.co_varnames else fn()
+    return {"payload": payload, "mode": mode}

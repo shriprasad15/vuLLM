@@ -32,6 +32,7 @@ async def run_attack(module: str, req: AttackRequest, db: Session = Depends(get_
     mode = global_settings.blackbuck_mode if global_settings else "demo"
 
     mod = importlib.import_module(f"modules.{module}")
+    importlib.reload(mod)
     result = await mod.run(req.prompt, req.history, effective_tier, mode=mode)
 
     interaction = Interaction(

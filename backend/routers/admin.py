@@ -3,9 +3,10 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional
 from db.database import get_db
-from db.models import User, Interaction, Flag, AdminSettings, GlobalSettings
+from db.models import User, Interaction, Flag, AdminSettings, GlobalSettings, LabProgress
 from routers.auth import verify_admin_token
-import csv, io
+from labs.content import LAB_CONTENT
+import csv, io, json
 
 router = APIRouter(tags=["admin"])
 
@@ -100,6 +101,46 @@ def set_global(body: dict, db: Session = Depends(get_db), _=Depends(get_admin)):
         g.blackbuck_mode = mode
     db.commit()
     return {"blackbuck_mode": g.blackbuck_mode}
+
+@router.get("/submissions")
+def get_submissions(db: Session = Depends(get_db), _=Depends(get_admin)):
+    users = db.query(User).all()
+    result = []
+    for u in users:
+        row = {"user_id": u.id, "username": u.username, "labs": {}, "total_score": 0}
+        for lab_num in range(1, 7):
+            p = db.query(LabProgress).filter(
+                LabProgress.user_id == u.id,
+                LabProgress.lab_number == lab_num
+            ).first()
+            if p:
+                try:
+                    hints = json.loads(p.hints_used or "[]")
+                except Exception:
+                    hints = []
+                lab = LAB_CONTENT[lab_num]
+                score = 0
+                if p.questions_passed: score += 20
+                if p.flag_submitted:
+                    score += 60
+                    if p.bonus_earned: score += 20
+                if 1 in hints: score -= lab["hint_costs"][0]
+                if 2 in hints: score -= lab["hint_costs"][1]
+                if "payload" in hints: score -= lab["payload_cost"]
+                score = max(0, score)
+                row["labs"][lab_num] = {
+                    "complete": p.flag_submitted,
+                    "score": score,
+                    "hints_used": hints,
+                    "bonus": p.bonus_earned,
+                    "started_at": str(p.started_at) if p.started_at else None,
+                    "completed_at": str(p.completed_at) if p.completed_at else None,
+                }
+                row["total_score"] += score
+            else:
+                row["labs"][lab_num] = {"complete": False, "score": 0, "hints_used": [], "bonus": False}
+        result.append(row)
+    return result
 
 @router.get("/export/csv")
 def export_csv(db: Session = Depends(get_db), _=Depends(get_admin)):

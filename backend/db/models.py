@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, ForeignKey, func
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, ForeignKey, UniqueConstraint, func
 from .database import Base
 
 class User(Base):
@@ -12,12 +12,12 @@ class User(Base):
 class Interaction(Base):
     __tablename__ = "interactions"
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     session_id = Column(String)
-    act = Column(Integer)
-    attack_type = Column(String)
+    act = Column(Integer, nullable=False)
+    attack_type = Column(String, nullable=False)
     defense_tier_active = Column(Integer, default=0)
-    prompt = Column(Text)
+    prompt = Column(Text, nullable=False)
     response = Column(Text)
     flag_captured = Column(Boolean, default=False)
     success = Column(Boolean, default=False)
@@ -26,12 +26,13 @@ class Interaction(Base):
 class Flag(Base):
     __tablename__ = "flags"
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
-    flag_name = Column(String)
-    act = Column(Integer)
-    attack_type = Column(String)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    flag_name = Column(String, nullable=False)
+    act = Column(Integer, nullable=False)
+    attack_type = Column(String, nullable=False)
     points = Column(Integer, default=100)
     captured_at = Column(DateTime, default=func.now())
+    __table_args__ = (UniqueConstraint("user_id", "flag_name", name="uq_user_flag"),)
 
 class AdminSettings(Base):
     __tablename__ = "admin_settings"

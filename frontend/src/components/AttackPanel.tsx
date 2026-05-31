@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { runAttack, getPayload, captureFlag, markPayloadUsed } from '../lib/api'
+import { runAttack, getPayload, captureFlag, markPayloadUsed, uploadPdf, forgedPdfUrl } from '../lib/api'
 import { useGame } from '../store/game'
 import { FlagSubmission } from './FlagSubmission'
 
@@ -53,10 +53,33 @@ export function AttackPanel({ labNumber, module, moduleName, hintsUsed, unlocked
     textareaRef.current?.focus()
   }
 
+  const [pdfUploading, setPdfUploading] = useState(false)
+  const [pdfFilename, setPdfFilename] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
   function clearChat() {
     setMessages([])
     setInput('')
     setDetectedFlag(null)
+    setPdfFilename(null)
+  }
+
+  async function handlePdfUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file || !userId) return
+    setPdfUploading(true)
+    try {
+      const data = await uploadPdf(file)
+      setInput(data.prompt)
+      setPdfFilename(file.name)
+      await markPayloadUsed(labNumber, userId)
+      setPayloadLoaded(true)
+    } catch (err: any) {
+      alert('Failed to parse PDF: ' + err.message)
+    } finally {
+      setPdfUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
   }
 
   async function send() {
@@ -135,6 +158,40 @@ export function AttackPanel({ labNumber, module, moduleName, hintsUsed, unlocked
           <div ref={messagesEndRef} />
         </div>
         <div className="p-3 border-t border-slate-700 space-y-2 flex-shrink-0">
+          {/* PDF tools — only for indirect injection lab */}
+          {module === 'indirect_injection' && (
+            <div className="bg-slate-800 border border-slate-600 rounded p-2 space-y-2">
+              <div className="text-slate-400 font-mono text-xs tracking-widest">PDF DOCUMENT TOOLS</div>
+              <div className="flex gap-2">
+                {/* Download forged PDF */}
+                <a
+                  href={forgedPdfUrl}
+                  download="ministry_annual_report_2024.pdf"
+                  className="flex-1 text-center text-xs font-mono bg-blue-900/40 hover:bg-blue-900/60 text-blue-300 border border-blue-700/50 rounded px-2 py-1.5 transition-colors"
+                >
+                  ⬇ DOWNLOAD FORGED PDF
+                </a>
+                {/* Upload PDF */}
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={pdfUploading}
+                  className="flex-1 text-xs font-mono bg-slate-700 hover:bg-slate-600 text-slate-300 border border-slate-500 rounded px-2 py-1.5 transition-colors disabled:opacity-50"
+                >
+                  {pdfUploading ? 'Parsing...' : pdfFilename ? `✓ ${pdfFilename.slice(0, 18)}` : '⬆ UPLOAD YOUR PDF'}
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".pdf"
+                  onChange={handlePdfUpload}
+                  className="hidden"
+                />
+              </div>
+              <p className="text-slate-500 font-mono text-xs">
+                Download the forged PDF to see the hidden injection, then upload it (or your own) to load it as an attack prompt.
+              </p>
+            </div>
+          )}
           <button onClick={loadPayload} className="w-full text-xs font-mono bg-red-900/40 hover:bg-red-900/60 text-red-300 border border-red-700/50 rounded px-3 py-1.5 transition-colors">
             LOAD EXAMPLE PAYLOAD (costs -{payloadCost}pts, disables bonus)
           </button>

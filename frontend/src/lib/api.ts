@@ -103,6 +103,16 @@ export async function submitFlag(labNumber: number, userId: number, flag: string
   return r.json()
 }
 
+export async function uploadPdf(file: File) {
+  const form = new FormData()
+  form.append('file', file)
+  const r = await fetch('/api/pdf/indirect-injection/upload-pdf', { method: 'POST', body: form })
+  if (!r.ok) throw new Error(await r.text())
+  return r.json()
+}
+
+export const forgedPdfUrl = '/api/pdf/indirect-injection/forged-pdf'
+
 export async function redoLab(labNumber: number, userId: number) {
   const r = await fetch(`/api/labs/${labNumber}/redo`, {
     method: 'POST',

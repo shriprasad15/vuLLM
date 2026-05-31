@@ -69,6 +69,16 @@ def reset_user(user_id: Optional[int] = None, db: Session = Depends(get_db), _=D
     db.commit()
     return {"message": "Reset complete"}
 
+@router.delete("/users/{user_id}")
+def delete_user(user_id: int, db: Session = Depends(get_db), _=Depends(get_admin)):
+    db.query(Flag).filter(Flag.user_id == user_id).delete()
+    db.query(Interaction).filter(Interaction.user_id == user_id).delete()
+    deleted = db.query(User).filter(User.id == user_id).delete()
+    db.commit()
+    if not deleted:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {"message": "User deleted"}
+
 @router.get("/export/csv")
 def export_csv(db: Session = Depends(get_db), _=Depends(get_admin)):
     from fastapi.responses import StreamingResponse

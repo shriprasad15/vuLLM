@@ -42,3 +42,8 @@ export async function adminPost(path: string, token: string, body: object) {
   const r = await fetch(`${BASE}/admin${path}`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(body) })
   return r.json()
 }
+
+export async function adminDelete(path: string, token: string) {
+  const r = await fetch(`${BASE}/admin${path}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
+  return r.json()
+}

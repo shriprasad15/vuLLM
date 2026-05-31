@@ -47,3 +47,65 @@ export async function adminDelete(path: string, token: string) {
   const r = await fetch(`${BASE}/admin${path}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
   return r.json()
 }
+
+export async function getLabProgress(userId: number) {
+  const r = await fetch(`${BASE}/labs/progress/${userId}`)
+  return r.json()
+}
+
+export async function getLabContent(labNumber: number, userId: number) {
+  const r = await fetch(`${BASE}/labs/${labNumber}/content?user_id=${userId}`)
+  return r.json()
+}
+
+export async function startLab(labNumber: number, userId: number) {
+  const r = await fetch(`${BASE}/labs/${labNumber}/start`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ user_id: userId }),
+  })
+  return r.json()
+}
+
+export async function submitQuestions(labNumber: number, userId: number, answers: Record<string, number>) {
+  const r = await fetch(`${BASE}/labs/${labNumber}/questions`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ user_id: userId, answers }),
+  })
+  return r.json()
+}
+
+export async function unlockHint(labNumber: number, hintNumber: number, userId: number) {
+  const r = await fetch(`${BASE}/labs/${labNumber}/hint/${hintNumber}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ user_id: userId }),
+  })
+  return r.json()
+}
+
+export async function markPayloadUsed(labNumber: number, userId: number) {
+  const r = await fetch(`${BASE}/labs/${labNumber}/payload-used`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ user_id: userId }),
+  })
+  return r.json()
+}
+
+export async function submitFlag(labNumber: number, userId: number, flag: string) {
+  const r = await fetch(`${BASE}/labs/${labNumber}/flag`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ user_id: userId, flag }),
+  })
+  return r.json()
+}
+
+export async function adminGetSubmissions(token: string) {
+  const r = await fetch(`${BASE}/admin/submissions`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  return r.json()
+}

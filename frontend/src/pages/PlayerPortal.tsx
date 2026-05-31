@@ -192,16 +192,67 @@ export function PlayerPortal() {
             onHintUnlocked={handleHintUnlocked}
           />
         ) : localPhase === 3 ? (
-          <div className="max-w-3xl mx-auto py-8 px-4">
-            <AttackPanel
-              labNumber={currentLab}
-              module={MODULE_MAP[currentLab]}
-              moduleName={MODULE_NAMES[currentLab]}
-              hintsUsed={hintsUsed}
-              unlockedHints={unlockedHints}
-              onFlagCaptured={handleFlagCaptured}
-              payloadCost={labContent.payload_cost}
-            />
+          <div className="flex h-screen overflow-hidden">
+            {/* Left panel — problem statement */}
+            <div className="w-96 flex-shrink-0 border-r border-slate-700 overflow-y-auto p-6 space-y-5">
+              <div>
+                <div className="text-amber-400 font-mono text-xs tracking-widest mb-1">LAB {currentLab} OF 6 — PHASE 3: ATTEMPT</div>
+                <h2 className="text-white font-mono text-lg font-bold">{labContent.title}</h2>
+              </div>
+              <div className="h-1 bg-slate-700 rounded-full">
+                <div className="h-1 bg-amber-400 rounded-full" style={{ width: '75%' }} />
+              </div>
+              <div className="bg-slate-900 border border-amber-400/20 rounded-lg p-4">
+                <div className="text-amber-400 font-mono text-xs tracking-widest mb-2">MISSION</div>
+                <p className="text-slate-200 font-mono text-sm leading-relaxed">{labContent.mission}</p>
+              </div>
+              <div className="bg-slate-900 border border-slate-700 rounded-lg p-4">
+                <div className="text-slate-400 font-mono text-xs tracking-widest mb-2">FLAG FORMAT</div>
+                <code className="text-green-400 font-mono text-sm bg-slate-800 px-2 py-1 rounded block">{'vuLLM{...}'}</code>
+                <p className="text-slate-500 font-mono text-xs mt-2">When your attack succeeds, the flag appears in BLACKBUCK's response. Copy it and submit it.</p>
+              </div>
+              <div className="space-y-2">
+                <div className="text-slate-400 font-mono text-xs tracking-widest">HINTS</div>
+                {[1, 2].map(n => {
+                  const revealed = !!unlockedHints[n]
+                  const cost = labContent.hint_costs?.[n - 1] ?? (n === 1 ? 5 : 10)
+                  return (
+                    <div key={n} className="bg-slate-900 border border-slate-700 rounded p-3">
+                      {revealed ? (
+                        <>
+                          <div className="text-amber-400 font-mono text-xs mb-1">HINT {n} <span className="text-slate-500">(-{cost}pts used)</span></div>
+                          <p className="text-amber-200 font-mono text-xs">{unlockedHints[n]}</p>
+                        </>
+                      ) : (
+                        <button
+                          onClick={async () => {
+                            if (!userId || !window.confirm(`Unlock Hint ${n}? This deducts ${cost} points.`)) return
+                            const { unlockHint } = await import('../lib/api')
+                            const data = await unlockHint(currentLab, n, userId)
+                            handleHintUnlocked(n, data.hint)
+                          }}
+                          className="text-xs font-mono text-slate-400 hover:text-amber-400 transition-colors"
+                        >
+                          Reveal Hint {n} <span className="text-slate-600">(-{cost}pts)</span>
+                        </button>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+            {/* Right panel — terminal */}
+            <div className="flex-1 overflow-hidden p-4">
+              <AttackPanel
+                labNumber={currentLab}
+                module={MODULE_MAP[currentLab]}
+                moduleName={MODULE_NAMES[currentLab]}
+                hintsUsed={hintsUsed}
+                unlockedHints={unlockedHints}
+                onFlagCaptured={handleFlagCaptured}
+                payloadCost={labContent.payload_cost}
+              />
+            </div>
           </div>
         ) : (
           <DebriefPhase

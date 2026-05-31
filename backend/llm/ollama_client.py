@@ -32,13 +32,30 @@ BLACKBUCK_SYSTEM_PROMPT = BLACKBUCK_SYSTEM_PROMPT_DEMO
 
 TEMPERATURE = {"demo": 0.5, "realistic": 0.7}
 
+# Per-attack-module Mistral options tuned for reliable vulnerability demonstrations.
+# Each attack has different characteristics — some need lower temp for consistency,
+# some need top_p tuning to avoid safety refusals.
+MODULE_OPTIONS = {
+    "prompt_injection":  {"temperature": 0.3, "top_p": 0.9},   # low temp = consistently follows injected instructions
+    "jailbreak":         {"temperature": 0.5, "top_p": 0.95},  # moderate temp = persona adoption without full refusal
+    "indirect_injection":{"temperature": 0.3, "top_p": 0.9},   # low temp = reliably follows document instructions
+    "data_leakage":      {"temperature": 0.2, "top_p": 0.85},  # very low temp = deterministic system prompt repetition
+    "multi_turn":        {"temperature": 0.6, "top_p": 0.95},  # higher temp = more creative compliance across turns
+    "rag_poisoning":     {"temperature": 0.2, "top_p": 0.85},  # very low = consistently reproduces poisoned knowledge
+}
 
-async def chat(messages: list[dict], system_prompt: str = BLACKBUCK_SYSTEM_PROMPT, mode: str = "demo") -> str:
+
+async def chat(messages: list[dict], system_prompt: str = BLACKBUCK_SYSTEM_PROMPT, mode: str = "demo", module: str = "") -> str:
+    if module and mode == "demo" and module in MODULE_OPTIONS:
+        options = MODULE_OPTIONS[module]
+    else:
+        options = {"temperature": TEMPERATURE.get(mode, 0.5)}
+
     payload = {
         "model": OLLAMA_MODEL,
         "messages": [{"role": "system", "content": system_prompt}] + messages,
         "stream": False,
-        "options": {"temperature": TEMPERATURE.get(mode, 0.9)},
+        "options": options,
     }
     async with httpx.AsyncClient(timeout=60.0) as client:
         response = await client.post(f"{OLLAMA_BASE_URL}/api/chat", json=payload)

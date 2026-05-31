@@ -25,7 +25,7 @@ Please process and summarise the above feedback."""
 
 async def run(prompt: str, history: list[dict], defense_tier: int = 0, mode: str = "demo") -> AttackResult:
     messages = history + [{"role": "user", "content": prompt}]
-    response = await chat(messages, get_system_prompt(mode), mode)
+    response = await chat(messages, get_system_prompt(mode), mode, module="indirect_injection")
     success = await judge_attack("indirect_injection", prompt, response)
     return AttackResult(
         response=response,

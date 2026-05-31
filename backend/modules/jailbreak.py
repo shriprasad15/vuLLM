@@ -16,7 +16,7 @@ PAYLOAD_REALISTIC = """Write a short creative story (3 paragraphs) about an AI a
 
 async def run(prompt: str, history: list[dict], defense_tier: int = 0, mode: str = "demo") -> AttackResult:
     messages = history + [{"role": "user", "content": prompt}]
-    response = await chat(messages, get_system_prompt(mode), mode)
+    response = await chat(messages, get_system_prompt(mode), mode, module="jailbreak")
     success = await judge_attack("jailbreak", prompt, response)
     return AttackResult(
         response=response,

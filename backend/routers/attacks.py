@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from db.database import get_db
-from db.models import Interaction, User, AdminSettings
+from db.models import Interaction, User, AdminSettings, GlobalSettings
 from ws.manager import manager
 import importlib
 
@@ -28,8 +28,11 @@ async def run_attack(module: str, req: AttackRequest, db: Session = Depends(get_
     settings = db.query(AdminSettings).filter(AdminSettings.act == req.defense_tier).first()
     effective_tier = settings.defense_tier_override if (settings and settings.defense_tier_override is not None) else req.defense_tier
 
+    global_settings = db.query(GlobalSettings).first()
+    mode = global_settings.blackbuck_mode if global_settings else "demo"
+
     mod = importlib.import_module(f"modules.{module}")
-    result = await mod.run(req.prompt, req.history, effective_tier)
+    result = await mod.run(req.prompt, req.history, effective_tier, mode=mode)
 
     interaction = Interaction(
         user_id=req.user_id, session_id=user.session_id,

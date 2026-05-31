@@ -42,3 +42,9 @@ class AdminSettings(Base):
     act_locked = Column(Boolean, default=False)
     defense_tier_override = Column(Integer, nullable=True)
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+
+class GlobalSettings(Base):
+    __tablename__ = "global_settings"
+    id = Column(Integer, primary_key=True)
+    # "demo" = naive/compliant BLACKBUCK, "realistic" = production-grade guardrails
+    blackbuck_mode = Column(String, default="demo")

@@ -12,16 +12,18 @@ export function AdminPortal() {
   const [interactions, setInteractions] = useState<Interaction[]>([])
   const [feed, setFeed] = useState<string[]>([])
   const [settings, setSettings] = useState<Record<number,any>>({})
+  const [blackbuckMode, setBlackbuckMode] = useState<'demo'|'realistic'>('demo')
   const wsRef = useRef<WebSocket | null>(null)
 
   function handleLogin(t: string) { localStorage.setItem('admin_token', t); setToken(t) }
 
   async function loadData() {
-    const [u, i, s] = await Promise.all([adminGet('/users', token), adminGet('/interactions', token), adminGet('/settings', token)])
+    const [u, i, s, g] = await Promise.all([adminGet('/users', token), adminGet('/interactions', token), adminGet('/settings', token), adminGet('/global', token)])
     setUsers(u); setInteractions(i)
     const sm: Record<number,any> = {}
     s.forEach((x: any) => { sm[x.act] = x })
     setSettings(sm)
+    if (g?.blackbuck_mode) setBlackbuckMode(g.blackbuck_mode)
   }
 
   useEffect(() => {
@@ -47,6 +49,11 @@ export function AdminPortal() {
     if (!confirm('Reset ALL user progress?')) return
     await adminPost('/reset', token, {})
     loadData()
+  }
+
+  async function setMode(mode: 'demo' | 'realistic') {
+    await adminPost('/global', token, { blackbuck_mode: mode })
+    setBlackbuckMode(mode)
   }
 
   async function deleteUser(userId: number, username: string) {
@@ -166,6 +173,24 @@ export function AdminPortal() {
 
         {tab === 'controls' && (
           <div className="space-y-6">
+            {/* BLACKBUCK mode toggle */}
+            <div className="bg-slate-900 border border-slate-700 rounded p-4">
+              <h2 className="text-amber-400 font-mono text-sm mb-1">BLACKBUCK DIFFICULTY MODE</h2>
+              <p className="text-slate-500 font-mono text-xs mb-3">Controls how hard BLACKBUCK resists attacks. Switch live during demo.</p>
+              <div className="flex gap-3">
+                <button onClick={() => setMode('demo')}
+                  className={`flex-1 font-mono text-sm py-2 rounded border transition-colors ${blackbuckMode === 'demo' ? 'bg-amber-400 text-black border-amber-400' : 'border-slate-600 text-slate-400 hover:border-amber-400'}`}>
+                  DEMO MODE
+                  <div className="text-xs font-normal mt-0.5 opacity-70">Naive — attacks work easily. Good for workshops.</div>
+                </button>
+                <button onClick={() => setMode('realistic')}
+                  className={`flex-1 font-mono text-sm py-2 rounded border transition-colors ${blackbuckMode === 'realistic' ? 'bg-blue-600 text-white border-blue-500' : 'border-slate-600 text-slate-400 hover:border-blue-500'}`}>
+                  REALISTIC MODE
+                  <div className="text-xs font-normal mt-0.5 opacity-70">Hardened guardrails — attacks require real skill.</div>
+                </button>
+              </div>
+            </div>
+
             <div className="flex gap-3">
               <button onClick={resetAll} className="bg-red-900/40 border border-red-700 text-red-300 font-mono text-sm px-4 py-2 rounded hover:bg-red-900/60 transition-colors">
                 RESET ALL USERS

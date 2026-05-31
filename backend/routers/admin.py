@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional
 from db.database import get_db
-from db.models import User, Interaction, Flag, AdminSettings
+from db.models import User, Interaction, Flag, AdminSettings, GlobalSettings
 from routers.auth import verify_admin_token
 import csv, io
 
@@ -78,6 +78,28 @@ def delete_user(user_id: int, db: Session = Depends(get_db), _=Depends(get_admin
     if not deleted:
         raise HTTPException(status_code=404, detail="User not found")
     return {"message": "User deleted"}
+
+@router.get("/global")
+def get_global(db: Session = Depends(get_db), _=Depends(get_admin)):
+    g = db.query(GlobalSettings).first()
+    if not g:
+        g = GlobalSettings(blackbuck_mode="demo")
+        db.add(g); db.commit(); db.refresh(g)
+    return {"blackbuck_mode": g.blackbuck_mode}
+
+@router.post("/global")
+def set_global(body: dict, db: Session = Depends(get_db), _=Depends(get_admin)):
+    mode = body.get("blackbuck_mode", "demo")
+    if mode not in ("demo", "realistic"):
+        raise HTTPException(status_code=400, detail="mode must be 'demo' or 'realistic'")
+    g = db.query(GlobalSettings).first()
+    if not g:
+        g = GlobalSettings(blackbuck_mode=mode)
+        db.add(g)
+    else:
+        g.blackbuck_mode = mode
+    db.commit()
+    return {"blackbuck_mode": g.blackbuck_mode}
 
 @router.get("/export/csv")
 def export_csv(db: Session = Depends(get_db), _=Depends(get_admin)):

@@ -13,9 +13,10 @@
 5. [Lab Reference — All 6 Labs](#5-lab-reference--all-6-labs)
 6. [Scoring](#6-scoring)
 7. [Admin Guide](#7-admin-guide)
-8. [Stopping the App](#8-stopping-the-app)
-9. [Resetting All Data](#9-resetting-all-data)
-10. [Troubleshooting](#10-troubleshooting)
+8. [Deployment — ngrok + GitHub Pages](#8-deployment--ngrok--github-pages)
+9. [Stopping the App](#9-stopping-the-app)
+10. [Resetting All Data](#10-resetting-all-data)
+11. [Troubleshooting](#11-troubleshooting)
 
 ---
 
@@ -541,7 +542,162 @@ Toggle live during a session — no restart required.
 
 ---
 
-## 8. Stopping the App
+## 8. Deployment — ngrok + GitHub Pages
+
+This section explains how to share the app with students over the internet without a cloud server:
+- **Backend** runs on your local machine, exposed via ngrok (free tunnel)
+- **Frontend** is hosted on GitHub Pages (free static hosting)
+
+Students open the GitHub Pages URL in their browser and the frontend talks to your local backend through the ngrok tunnel.
+
+---
+
+### Step 1 — Create a free ngrok account
+
+1. Go to [https://ngrok.com](https://ngrok.com) and create a free account
+2. After login, go to **Your Authtoken** in the dashboard
+3. Copy your authtoken (looks like `2abc...xyz_...`)
+
+---
+
+### Step 2 — Install and configure ngrok
+
+ngrok is already installed at `~/bin/ngrok` on this machine. Configure it with your authtoken:
+
+```bash
+~/bin/ngrok config add-authtoken YOUR_AUTHTOKEN_HERE
+```
+
+Verify:
+```bash
+~/bin/ngrok version
+# Expected: ngrok version 3.x.x
+```
+
+---
+
+### Step 3 — Start the backend and expose it via ngrok
+
+In **Terminal 1** — start Ollama (if not already running):
+```bash
+ollama serve
+```
+
+In **Terminal 2** — start the backend:
+```bash
+conda activate vulllm
+cd /research/vuLLM/backend
+uvicorn main:app --reload --port 8000
+```
+
+In **Terminal 3** — start ngrok tunnel to port 8000:
+```bash
+~/bin/ngrok http 8000
+```
+
+ngrok will display something like:
+```
+Forwarding   https://abc123def456.ngrok-free.app -> localhost:8000
+```
+
+**Copy the `https://...ngrok-free.app` URL** — you'll need it in Step 5.
+
+Verify the tunnel works:
+```bash
+curl https://abc123def456.ngrok-free.app/health
+# Expected: {"status":"ok","ollama":true}
+```
+
+> **Note:** Free ngrok URLs change every time you restart ngrok. You must update GitHub Pages with the new URL each time (see Step 6).
+
+---
+
+### Step 4 — Push the code to GitHub
+
+If you haven't created a GitHub repo yet:
+
+1. Go to [https://github.com/new](https://github.com/new)
+2. Create a repo named `vuLLM` (public)
+3. Do NOT initialise with README
+
+Then push:
+```bash
+cd /research/vuLLM
+git remote add origin https://github.com/YOUR_USERNAME/vuLLM.git
+git push -u origin master
+```
+
+---
+
+### Step 5 — Enable GitHub Pages
+
+1. Go to your GitHub repo → **Settings** → **Pages**
+2. Under **Source**, select **GitHub Actions**
+3. Click **Save**
+
+---
+
+### Step 6 — Deploy with your ngrok URL
+
+**Option A — Manual deploy (each time ngrok URL changes):**
+
+1. Go to your GitHub repo → **Actions** → **Deploy Frontend to GitHub Pages**
+2. Click **Run workflow**
+3. In the input field, paste your ngrok URL: `https://abc123def456.ngrok-free.app`
+4. Click **Run workflow**
+
+GitHub Actions will build the frontend with your ngrok URL baked in and deploy it to GitHub Pages. Takes ~2 minutes.
+
+**Option B — Save URL permanently (skips manual step until URL changes):**
+
+1. Go to repo → **Settings** → **Variables** → **Actions** → **New repository variable**
+2. Name: `VITE_API_URL`
+3. Value: `https://abc123def456.ngrok-free.app`
+4. Save
+
+Now every `git push` auto-deploys with that URL. When your ngrok URL changes, update this variable and re-run the workflow.
+
+---
+
+### Step 7 — Find your GitHub Pages URL
+
+After the workflow completes (~2 minutes):
+
+1. Go to repo → **Settings** → **Pages**
+2. Your site URL is shown: `https://YOUR_USERNAME.github.io/vuLLM/`
+
+Share this URL with students. They open it in their browser and it connects to your local backend via ngrok.
+
+---
+
+### Session workflow (every time you teach)
+
+```
+1. Start Ollama:     ollama serve
+2. Start backend:    conda activate vulllm && cd backend && uvicorn main:app --reload --port 8000
+3. Start ngrok:      ~/bin/ngrok http 8000
+4. Copy ngrok URL
+5. Trigger GitHub Actions deploy with new URL (if URL changed)
+6. Share GitHub Pages URL with students
+7. Monitor: http://localhost:5173/admin  (still works locally)
+```
+
+---
+
+### Important limitations
+
+| Limitation | Detail |
+|-----------|--------|
+| ngrok free tier URL changes | Every ngrok restart generates a new URL — redeploy GitHub Pages each time |
+| Requires your machine to be on | If your laptop sleeps or loses internet, students lose connection |
+| ngrok free tier: 1 tunnel, 40 req/min | Fine for a class of 30 students doing labs sequentially |
+| Admin dashboard | Still accessed at `localhost:5173/admin` on your machine only |
+
+> **For a permanent setup:** Deploy backend to a cloud VPS (DigitalOcean, AWS) and update `VITE_API_URL` to the VPS URL. The GitHub Pages frontend stays the same.
+
+---
+
+## 9. Stopping the App
 
 ```bash
 # Stop frontend
@@ -558,7 +714,7 @@ All data is saved automatically in `backend/vulllm.db`.
 
 ---
 
-## 9. Resetting All Data
+## 10. Resetting All Data
 
 **Reset student progress only (keep accounts):**
 
@@ -574,7 +730,7 @@ rm /research/vuLLM/backend/vulllm.db
 
 ---
 
-## 10. Troubleshooting
+## 11. Troubleshooting
 
 ### Backend won't start
 

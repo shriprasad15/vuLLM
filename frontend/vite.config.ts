@@ -4,6 +4,8 @@ import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  // base: '/' for local dev, set to repo name for GitHub Pages if needed
+  base: '/',
   server: {
     proxy: {
       '/api': { target: 'http://localhost:8000', rewrite: (path) => path.replace(/^\/api/, '') },

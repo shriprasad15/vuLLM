@@ -1,4 +1,13 @@
-const BASE = '/api'
+// In dev: uses Vite proxy (/api → localhost:8000)
+// In GitHub Pages: reads VITE_API_URL env var set at build time (the ngrok URL)
+const BASE = import.meta.env.VITE_API_URL
+  ? `${import.meta.env.VITE_API_URL}`
+  : '/api'
+
+// WebSocket base: wss:// for https ngrok, ws:// for local
+export const WS_BASE = import.meta.env.VITE_API_URL
+  ? import.meta.env.VITE_API_URL.replace(/^http/, 'ws')
+  : `ws://${location.host}`
 
 export async function registerPlayer(username: string) {
   const r = await fetch(`${BASE}/players/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username }) })
@@ -111,7 +120,7 @@ export async function uploadPdf(file: File) {
   return r.json()
 }
 
-export const forgedPdfUrl = '/api/pdf/indirect-injection/forged-pdf'
+export const forgedPdfUrl = `${BASE}/pdf/indirect-injection/forged-pdf`
 
 export async function redoLab(labNumber: number, userId: number) {
   const r = await fetch(`/api/labs/${labNumber}/redo`, {

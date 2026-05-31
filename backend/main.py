@@ -11,9 +11,19 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Operation: vuLLM")
 
+import os as _os
+_EXTRA_ORIGINS = _os.getenv("ALLOWED_ORIGINS", "").split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000"],
+    allow_origins=[
+        "http://localhost:5173",
+        "http://localhost:3000",
+        "https://*.github.io",        # GitHub Pages
+        "https://*.ngrok-free.app",   # ngrok
+        "https://*.ngrok.io",
+        *[o.strip() for o in _EXTRA_ORIGINS if o.strip()],
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

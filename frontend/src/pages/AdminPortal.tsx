@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { adminGet, adminPost, adminDelete, adminGetSubmissions } from '../lib/api'
+import { adminGet, adminPost, adminDelete, adminGetSubmissions, WS_BASE } from '../lib/api'
 import { AdminLogin } from './AdminLogin'
 
 interface User { id: number; username: string; score: number; flags: number; last_prompt: string; last_seen: string }
@@ -38,7 +38,7 @@ export function AdminPortal() {
   useEffect(() => {
     if (!token) return
     loadData()
-    wsRef.current = new WebSocket(`ws://${location.host}/ws/admin`)
+    wsRef.current = new WebSocket(`${WS_BASE}/ws/admin`)
     wsRef.current.onmessage = (e) => {
       const d = JSON.parse(e.data)
       setFeed(f => [`[${new Date().toLocaleTimeString()}] ${d.user}: ${d.module} — ${d.success ? '✓ SUCCESS' : '✗ failed'} ${d.flag ? '🚩' : ''}`, ...f.slice(0, 99)])

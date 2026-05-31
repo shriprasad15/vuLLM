@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getLeaderboard } from '../lib/api'
+import { getLeaderboard, WS_BASE } from '../lib/api'
 
 interface Entry { rank: number; username: string; score: number; flags: number }
 
@@ -12,7 +12,7 @@ export function Leaderboard() {
 
   useEffect(() => {
     refresh()
-    const ws = new WebSocket(`ws://${location.host}/ws/leaderboard`)
+    const ws = new WebSocket(`${WS_BASE}/ws/leaderboard`)
     ws.onmessage = (e) => { const d = JSON.parse(e.data); if (d.type === 'flag') refresh() }
     return () => ws.close()
   }, [])

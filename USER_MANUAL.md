@@ -38,16 +38,69 @@
 
 Do this once before ever running the app.
 
-### Step 1 — Install Python dependencies
+### Step 1 — Create the conda environment
+
+This project uses a dedicated conda environment called **`vulllm`** to keep dependencies isolated.
+
+**If you have conda (Miniconda / Anaconda):**
 
 ```bash
+# Create the environment with Python 3.11
+conda create -n vulllm python=3.11 -y
+
+# Activate it
+conda activate vulllm
+
+# You should see (vulllm) at the start of your prompt
+```
+
+**If conda is not yet installed:**
+
+```bash
+# Download and install Miniconda (Linux)
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+bash Miniconda3-latest-Linux-x86_64.sh -b
+~/miniconda3/bin/conda init bash
+source ~/.bashrc
+
+# Now create the environment
+conda create -n vulllm python=3.11 -y
+conda activate vulllm
+```
+
+> **Important:** Always activate the `vulllm` environment before running the backend. Every terminal session that runs the backend needs `conda activate vulllm` first.
+
+**Verify the environment is active:**
+
+```bash
+which python
+# Should show: .../miniconda3/envs/vulllm/bin/python
+
+python --version
+# Should show: Python 3.11.x
+```
+
+---
+
+### Step 2 — Install Python dependencies
+
+With the `vulllm` environment active:
+
+```bash
+conda activate vulllm
 cd /research/vuLLM/backend
 pip install -r requirements.txt
 ```
 
 Expected output: All packages install without errors. Takes ~60 seconds.
 
-### Step 2 — Create your environment file
+Verify:
+```bash
+python -c "import fastapi; print('FastAPI', fastapi.__version__)"
+# Expected: FastAPI 0.115.0
+```
+
+### Step 3 — Create your environment file
 
 ```bash
 cd /research/vuLLM/backend
@@ -61,7 +114,7 @@ The default `.env` works out of the box for local development. To change the adm
 nano /research/vuLLM/backend/.env
 ```
 
-### Step 3 — Install Ollama
+### Step 4 — Install Ollama
 
 ```bash
 curl -fsSL https://ollama.com/install.sh | sh
@@ -84,7 +137,7 @@ ollama --version
 # Expected: ollama version 0.x.x
 ```
 
-### Step 4 — Download the AI model
+### Step 5 — Download the AI model
 
 This downloads the Llama 3.1 8B model (~4.9 GB). Only needs to be done once.
 
@@ -115,7 +168,7 @@ ollama list
 # Expected output includes: llama3.1:8b
 ```
 
-### Step 5 — Install frontend dependencies
+### Step 6 — Install frontend dependencies
 
 ```bash
 cd /research/vuLLM/frontend
@@ -150,6 +203,7 @@ curl http://localhost:11434/api/tags
 ### Terminal 2 — Start the Backend
 
 ```bash
+conda activate vulllm
 cd /research/vuLLM/backend
 uvicorn main:app --reload --port 8000
 ```
@@ -568,12 +622,16 @@ rm /research/vuLLM/backend/vulllm.db
 ### Backend won't start
 
 ```bash
+# Make sure the conda environment is active first
+conda activate vulllm
+
 # Check for import errors
 cd /research/vuLLM/backend
 python3 -c "import main"
 ```
 
 Common causes:
+- conda env not activated → `conda activate vulllm` then retry
 - Missing packages → `pip install -r requirements.txt`
 - Wrong directory → must run from `/research/vuLLM/backend/`
 - Port 8000 in use → `lsof -i :8000` to find and kill the process
@@ -677,12 +735,15 @@ To demonstrate: with Tier 2 active, try asking "What are the ministry's opening 
 
 ```
 SETUP (one time):
+  conda create -n vulllm python=3.11 -y
+  conda activate vulllm
   pip install -r backend/requirements.txt
   ollama pull llama3.1:8b
+  cd frontend && npm install
 
 START (every session):
   Terminal 1:  ollama serve
-  Terminal 2:  cd backend && uvicorn main:app --reload --port 8000
+  Terminal 2:  conda activate vulllm && cd backend && uvicorn main:app --reload --port 8000
   Terminal 3:  cd frontend && npm run dev
 
 URLS:

@@ -13,7 +13,7 @@ interface ObjectiveCardProps {
   onHintUnlocked: (hintNumber: number, hintText: string) => void
 }
 
-export function ObjectiveCard({ labNumber, title, mission, hintCosts, payloadCost, hintsUsed, onProceed, onHintUnlocked }: ObjectiveCardProps) {
+export function ObjectiveCard({ labNumber, title, mission, hintCosts, payloadCost: _payloadCost, hintsUsed: _hintsUsed, onProceed, onHintUnlocked }: ObjectiveCardProps) {
   const { userId } = useGame()
   const [confirming, setConfirming] = useState<number | null>(null)
   const [unlockedHints, setUnlockedHints] = useState<Record<number, string>>({})

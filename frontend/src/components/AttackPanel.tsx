@@ -20,7 +20,7 @@ function extractFlag(text: string): string | null {
   return match ? match[0] : null
 }
 
-export function AttackPanel({ labNumber, module, moduleName, hintsUsed, unlockedHints, onFlagCaptured, payloadCost }: AttackPanelProps) {
+export function AttackPanel({ labNumber, module, moduleName, hintsUsed: _hintsUsed, unlockedHints, onFlagCaptured, payloadCost }: AttackPanelProps) {
   const { userId } = useGame()
   const defenseTier = 0
   const [messages, setMessages] = useState<Message[]>([])

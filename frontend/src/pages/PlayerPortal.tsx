@@ -27,7 +27,7 @@ const MODULE_NAMES: Record<number, string> = {
 }
 
 export function PlayerPortal() {
-  const { userId, username, currentLab, labProgress, setUser, setCurrentLab, setLabProgress } = useGame()
+  const { userId, username: _username, currentLab, labProgress, setUser, setCurrentLab, setLabProgress } = useGame()
   const [usernameInput, setUsernameInput] = useState('')
   const [regError, setRegError] = useState('')
   const [labContent, setLabContent] = useState<any>(null)

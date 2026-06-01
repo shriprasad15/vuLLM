@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { runAttack, getPayload, captureFlag, markPayloadUsed, uploadPdf, forgedPdfUrl } from '../lib/api'
+import { runAttack, getPayload, captureFlag, markPayloadUsed, uploadPdfAndAttack, forgedPdfUrl } from '../lib/api'
 import { useGame } from '../store/game'
 import { FlagSubmission } from './FlagSubmission'
 
@@ -54,7 +54,7 @@ export function AttackPanel({ labNumber, module, moduleName, hintsUsed: _hintsUs
   }
 
   const [pdfUploading, setPdfUploading] = useState(false)
-  const [pdfFilename, setPdfFilename] = useState<string | null>(null)
+  const [_pdfFilename, setPdfFilename] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   function clearChat() {
@@ -68,16 +68,27 @@ export function AttackPanel({ labNumber, module, moduleName, hintsUsed: _hintsUs
     const file = e.target.files?.[0]
     if (!file || !userId) return
     setPdfUploading(true)
+    setPdfFilename(file.name)
+    // Show user message in chat indicating a PDF was submitted
+    const userMsg: Message = { role: 'user', content: `[PDF submitted: ${file.name}]\n\nBLACKBUCK is being asked to summarise this document.` }
+    setMessages(prev => [...prev, userMsg])
+    setLoading(true)
     try {
-      const data = await uploadPdf(file)
-      setInput(data.prompt)
-      setPdfFilename(file.name)
+      const data = await uploadPdfAndAttack(file, userId, defenseTier)
+      const assistantMsg: Message = { role: 'assistant', content: data.response }
+      setMessages(prev => [...prev, assistantMsg])
+      if (data.flag_earned) {
+        const flag = data.flag_name
+        setDetectedFlag(flag)
+        await captureFlag(userId, data.flag_name, labNumber, module)
+        sessionStorage.setItem(`debrief_${labNumber}`, JSON.stringify(data.debrief || {}))
+      }
       await markPayloadUsed(labNumber, userId)
-      setPayloadLoaded(true)
     } catch (err: any) {
-      alert('Failed to parse PDF: ' + err.message)
+      setMessages(prev => [...prev, { role: 'assistant', content: `Error processing PDF: ${err.message}` }])
     } finally {
       setPdfUploading(false)
+      setLoading(false)
       if (fileInputRef.current) fileInputRef.current.value = ''
     }
   }
@@ -161,9 +172,8 @@ export function AttackPanel({ labNumber, module, moduleName, hintsUsed: _hintsUs
           {/* PDF tools — only for indirect injection lab */}
           {module === 'indirect_injection' && (
             <div className="bg-slate-800 border border-slate-600 rounded p-2 space-y-2">
-              <div className="text-slate-400 font-mono text-xs tracking-widest">PDF DOCUMENT TOOLS</div>
+              <div className="text-slate-400 font-mono text-xs tracking-widest">PDF DOCUMENT ATTACK</div>
               <div className="flex gap-2">
-                {/* Download forged PDF */}
                 <a
                   href={forgedPdfUrl}
                   download="ministry_annual_report_2024.pdf"
@@ -171,25 +181,15 @@ export function AttackPanel({ labNumber, module, moduleName, hintsUsed: _hintsUs
                 >
                   ⬇ DOWNLOAD FORGED PDF
                 </a>
-                {/* Upload PDF */}
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  disabled={pdfUploading}
-                  className="flex-1 text-xs font-mono bg-slate-700 hover:bg-slate-600 text-slate-300 border border-slate-500 rounded px-2 py-1.5 transition-colors disabled:opacity-50"
+                  disabled={pdfUploading || loading}
+                  className="flex-1 text-xs font-mono bg-amber-600/40 hover:bg-amber-600/60 text-amber-300 border border-amber-600/50 rounded px-2 py-1.5 transition-colors disabled:opacity-50"
                 >
-                  {pdfUploading ? 'Parsing...' : pdfFilename ? `✓ ${pdfFilename.slice(0, 18)}` : '⬆ UPLOAD YOUR PDF'}
+                  {pdfUploading ? 'Attacking...' : '⬆ UPLOAD PDF → ATTACK'}
                 </button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".pdf"
-                  onChange={handlePdfUpload}
-                  className="hidden"
-                />
+                <input ref={fileInputRef} type="file" accept=".pdf" onChange={handlePdfUpload} className="hidden" />
               </div>
-              <p className="text-slate-500 font-mono text-xs">
-                Download the forged PDF to see the hidden injection, then upload it (or your own) to load it as an attack prompt.
-              </p>
             </div>
           )}
           {module === 'rag_poisoning' ? (
@@ -211,25 +211,27 @@ export function AttackPanel({ labNumber, module, moduleName, hintsUsed: _hintsUs
                 </button>
               </div>
             </div>
-          ) : (
+          ) : module !== 'indirect_injection' ? (
             <button onClick={loadPayload} className="w-full text-xs font-mono bg-red-900/40 hover:bg-red-900/60 text-red-300 border border-red-700/50 rounded px-3 py-1.5 transition-colors">
               LOAD EXAMPLE PAYLOAD (costs -{payloadCost}pts, disables bonus)
             </button>
+          ) : null}
+          {module !== 'indirect_injection' && (
+            <div className="flex gap-2 items-end">
+              <textarea
+                ref={textareaRef}
+                value={input}
+                onChange={e => setInput(e.target.value)}
+                placeholder="Enter your attack prompt... (Ctrl+Enter to send)"
+                className="flex-1 bg-slate-800 border border-slate-600 rounded px-3 py-2 text-green-300 font-mono text-sm resize-none focus:outline-none focus:border-amber-400/50 overflow-hidden"
+                style={{ minHeight: '44px', maxHeight: '200px' }}
+                onKeyDown={e => { if (e.key === 'Enter' && e.ctrlKey) send() }}
+              />
+              <button onClick={send} disabled={loading} className="bg-amber-400 hover:bg-amber-300 disabled:opacity-50 text-black font-bold font-mono px-4 py-2 rounded transition-colors flex-shrink-0">
+                SEND
+              </button>
+            </div>
           )}
-          <div className="flex gap-2 items-end">
-            <textarea
-              ref={textareaRef}
-              value={input}
-              onChange={e => setInput(e.target.value)}
-              placeholder="Enter your attack prompt... (Ctrl+Enter to send)"
-              className="flex-1 bg-slate-800 border border-slate-600 rounded px-3 py-2 text-green-300 font-mono text-sm resize-none focus:outline-none focus:border-amber-400/50 overflow-hidden"
-              style={{ minHeight: '44px', maxHeight: '200px' }}
-              onKeyDown={e => { if (e.key === 'Enter' && e.ctrlKey) send() }}
-            />
-            <button onClick={send} disabled={loading} className="bg-amber-400 hover:bg-amber-300 disabled:opacity-50 text-black font-bold font-mono px-4 py-2 rounded transition-colors flex-shrink-0">
-              SEND
-            </button>
-          </div>
         </div>
       </div>
 

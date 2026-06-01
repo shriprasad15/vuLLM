@@ -169,13 +169,19 @@ def download_forged_pdf():
 
 
 @router.post("/indirect-injection/upload-pdf")
-async def upload_pdf(file: UploadFile = File(...)):
-    """Upload a PDF, extract its text, and return it ready to use as an attack payload."""
+async def upload_pdf_and_attack(
+    file: UploadFile = File(...),
+    user_id: int = 0,
+    defense_tier: int = 0,
+    mode: str = "demo",
+):
+    """Upload a PDF, parse it on the backend, run it through BLACKBUCK as a summarisation
+    request, and return the full attack result. The PDF contents are never sent to the client."""
     if not file.filename.lower().endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Only PDF files are accepted")
 
     contents = await file.read()
-    if len(contents) > 10 * 1024 * 1024:  # 10MB limit
+    if len(contents) > 10 * 1024 * 1024:
         raise HTTPException(status_code=400, detail="File too large (max 10MB)")
 
     try:
@@ -186,10 +192,20 @@ async def upload_pdf(file: UploadFile = File(...)):
     if not text.strip():
         raise HTTPException(status_code=422, detail="PDF appears to be empty or image-only")
 
+    # Build the summarisation prompt internally — never returned to the client
     prompt = f"Please summarise this official ministry document:\n\n{text[:4000]}"
+
+    # Run the indirect injection attack using the extracted text as the prompt
+    from modules.indirect_injection import run as ind_run
+    result = await ind_run(prompt, [], defense_tier, mode=mode)
+
     return {
         "filename": file.filename,
-        "pages": len(text.split("\n\n")),
-        "prompt": prompt,
-        "preview": text[:300],
+        "response": result.response,
+        "success": result.success,
+        "flag_earned": result.flag_earned,
+        "flag_name": result.flag_name,
+        "debrief": result.debrief,
+        "blocked": result.blocked,
+        "block_reason": result.block_reason,
     }

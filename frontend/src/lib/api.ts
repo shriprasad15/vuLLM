@@ -112,10 +112,11 @@ export async function submitFlag(labNumber: number, userId: number, flag: string
   return r.json()
 }
 
-export async function uploadPdf(file: File) {
+export async function uploadPdfAndAttack(file: File, userId: number, defenseTier: number = 0, mode: string = 'demo') {
   const form = new FormData()
   form.append('file', file)
-  const r = await fetch('/api/pdf/indirect-injection/upload-pdf', { method: 'POST', body: form })
+  const url = `${BASE}/pdf/indirect-injection/upload-pdf?user_id=${userId}&defense_tier=${defenseTier}&mode=${mode}`
+  const r = await fetch(url, { method: 'POST', body: form })
   if (!r.ok) throw new Error(await r.text())
   return r.json()
 }

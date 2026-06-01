@@ -4,13 +4,17 @@
   <meta charset="utf-8">
   <title>Operation: vuLLM</title>
   <script>
-    // GitHub Pages SPA redirect — forwards 404s back to index.html with the path preserved
-    var l = window.location;
-    l.replace(l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
-      l.pathname.split('/').slice(0, 2).join('/') +
-      '/?p=' + l.pathname.slice(1).split('/').slice(1).join('/').replace(/&/g, '~and~') +
-      (l.search ? '&q=' + l.search.slice(1).replace(/&/g, '~and~') : '') +
-      l.hash
+    // GitHub Pages SPA redirect trick.
+    // Stores the full path in sessionStorage then redirects to the root index.html.
+    // The index.html script reads it back and calls history.replaceState.
+    var path = window.location.pathname;
+    var search = window.location.search;
+    var hash = window.location.hash;
+    sessionStorage.setItem('redirect', path + search + hash);
+    window.location.replace(
+      window.location.protocol + '//' + window.location.hostname +
+      (window.location.port ? ':' + window.location.port : '') +
+      '/vuLLM/'
     );
   </script>
 </head>

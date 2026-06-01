@@ -6,12 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Operation: vuLLM</title>
     <script>
-      // GitHub Pages SPA redirect handler
+      // GitHub Pages SPA redirect — restores the path stored by 404.html
       (function() {
-        var redirect = sessionStorage.redirect;
-        delete sessionStorage.redirect;
-        if (redirect && redirect !== location.href) {
-          history.replaceState(null, null, redirect);
+        var redirect = sessionStorage.getItem('redirect');
+        if (redirect) {
+          sessionStorage.removeItem('redirect');
+          // Extract the route part after /vuLLM
+          var route = redirect.replace(/^\/vuLLM/, '') || '/';
+          if (route !== window.location.pathname) {
+            history.replaceState(null, null, redirect);
+          }
         }
       })();
     </script>

@@ -387,14 +387,19 @@ export function PlayerPortal() {
               await redoLab(currentLab, userId)
               const data = await getLabProgress(userId)
               setLabProgress(data.labs, data.total_score)
-              // Instant reset — go back to phase 1 immediately
+              // Reset local state directly — don't call loadLab which reads stale labProgress
               setLocalPhase(1)
               setHintsUsed([])
               setUnlockedHints({})
               setDebrief(null)
               setLabScore(0)
               setLabBonus(false)
-              await loadLab(currentLab)
+              // Reload content only (not phase — we already set it to 1 above)
+              try {
+                const { getLabContent, startLab } = await import('../lib/api')
+                const [content] = await Promise.all([getLabContent(currentLab, userId), startLab(currentLab, userId)])
+                setLabContent(content)
+              } catch {}
             }}
           />
         )}

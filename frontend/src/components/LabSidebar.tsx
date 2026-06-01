@@ -1,6 +1,5 @@
 import { useGame } from '../store/game'
 import type { LabStatus } from '../store/game'
-import { redoLab, getLabProgress } from '../lib/api'
 
 const LAB_ICONS = {
   locked: '🔒',
@@ -20,17 +19,7 @@ interface LabSidebarProps {
 }
 
 export function LabSidebar({ onSelectLab }: LabSidebarProps) {
-  const { username, totalScore, labProgress, currentLab, userId, setLabProgress } = useGame()
-
-  async function handleRedo(e: React.MouseEvent, labNumber: number) {
-    e.stopPropagation()
-    if (!userId) return
-    if (!window.confirm(`Redo Lab ${labNumber}? Your current score and progress for this lab will be reset. It will be flagged as a redo attempt in the admin view.`)) return
-    await redoLab(labNumber, userId)
-    const data = await getLabProgress(userId)
-    setLabProgress(data.labs, data.total_score)
-    onSelectLab(labNumber)
-  }
+  const { username, totalScore, labProgress, currentLab } = useGame()
 
   return (
     <aside className="w-56 flex-shrink-0 bg-slate-900 border-r border-slate-700 flex flex-col h-screen sticky top-0">
@@ -49,7 +38,7 @@ export function LabSidebar({ onSelectLab }: LabSidebarProps) {
           const isActive = lab.lab_number === currentLab
           const isClickable = !lab.locked
           return (
-            <div key={lab.lab_number} className="relative group">
+            <div key={lab.lab_number}>
               <button
                 onClick={() => isClickable && onSelectLab(lab.lab_number)}
                 disabled={!isClickable}
@@ -81,16 +70,6 @@ export function LabSidebar({ onSelectLab }: LabSidebarProps) {
                 )}
               </button>
 
-              {/* Redo button — only on completed labs, shown on hover */}
-              {lab.complete && (
-                <button
-                  onClick={(e) => handleRedo(e, lab.lab_number)}
-                  title="Redo this lab"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 text-slate-500 hover:text-orange-400 font-mono text-xs px-1 transition-all"
-                >
-                  ↺
-                </button>
-              )}
             </div>
           )
         })}

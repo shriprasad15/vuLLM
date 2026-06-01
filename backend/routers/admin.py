@@ -62,11 +62,14 @@ def get_settings(db: Session = Depends(get_db), _=Depends(get_admin)):
 def reset_user(user_id: Optional[int] = None, db: Session = Depends(get_db), _=Depends(get_admin)):
     q_flags = db.query(Flag)
     q_interactions = db.query(Interaction)
+    q_progress = db.query(LabProgress)
     if user_id:
         q_flags = q_flags.filter(Flag.user_id == user_id)
         q_interactions = q_interactions.filter(Interaction.user_id == user_id)
+        q_progress = q_progress.filter(LabProgress.user_id == user_id)
     q_flags.delete()
     q_interactions.delete()
+    q_progress.delete()
     db.commit()
     return {"message": "Reset complete"}
 
@@ -74,6 +77,7 @@ def reset_user(user_id: Optional[int] = None, db: Session = Depends(get_db), _=D
 def delete_user(user_id: int, db: Session = Depends(get_db), _=Depends(get_admin)):
     db.query(Flag).filter(Flag.user_id == user_id).delete()
     db.query(Interaction).filter(Interaction.user_id == user_id).delete()
+    db.query(LabProgress).filter(LabProgress.user_id == user_id).delete()
     deleted = db.query(User).filter(User.id == user_id).delete()
     db.commit()
     if not deleted:

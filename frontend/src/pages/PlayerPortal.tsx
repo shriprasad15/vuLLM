@@ -381,6 +381,21 @@ export function PlayerPortal() {
             score={labScore}
             bonus={labBonus}
             onComplete={handleLabComplete}
+            onRedo={async () => {
+              if (!userId || !window.confirm(`Redo Lab ${currentLab}? Your score and progress for this lab will be reset.`)) return
+              const { redoLab, getLabProgress } = await import('../lib/api')
+              await redoLab(currentLab, userId)
+              const data = await getLabProgress(userId)
+              setLabProgress(data.labs, data.total_score)
+              // Instant reset — go back to phase 1 immediately
+              setLocalPhase(1)
+              setHintsUsed([])
+              setUnlockedHints({})
+              setDebrief(null)
+              setLabScore(0)
+              setLabBonus(false)
+              await loadLab(currentLab)
+            }}
           />
         )}
       </main>

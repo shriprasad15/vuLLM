@@ -5,9 +5,10 @@ interface DebriefPhaseProps {
   score: number
   bonus: boolean
   onComplete: () => void
+  onRedo: () => void
 }
 
-export function DebriefPhase({ labNumber, title, debrief, score, bonus, onComplete }: DebriefPhaseProps) {
+export function DebriefPhase({ labNumber, title, debrief, score, bonus, onComplete, onRedo }: DebriefPhaseProps) {
   return (
     <div className="max-w-2xl mx-auto py-8 px-4 space-y-8">
       <div>
@@ -39,9 +40,20 @@ export function DebriefPhase({ labNumber, title, debrief, score, bonus, onComple
         <p className="text-slate-400 font-mono text-sm">You will learn how to patch this vulnerability — adding the guardrails that would have stopped your own attack.</p>
       </div>
 
-      <button onClick={onComplete} className={`w-full font-bold font-mono py-3 rounded transition-colors ${labNumber < 6 ? 'bg-amber-400 hover:bg-amber-300 text-black' : 'bg-green-500 hover:bg-green-400 text-black text-lg'}`}>
-        {labNumber < 6 ? `PROCEED TO LAB ${labNumber + 1} →` : '🏆 COMPLETE PART A — VIEW RESULTS'}
-      </button>
+      <div className="flex gap-3">
+        <button
+          onClick={onRedo}
+          className="px-6 font-bold font-mono py-3 rounded transition-colors bg-slate-700 hover:bg-slate-600 text-slate-200 border border-slate-500"
+        >
+          ↺ REDO LAB
+        </button>
+        <button
+          onClick={onComplete}
+          className={`flex-1 font-bold font-mono py-3 rounded transition-colors ${labNumber < 6 ? 'bg-amber-400 hover:bg-amber-300 text-black' : 'bg-green-500 hover:bg-green-400 text-black text-lg'}`}
+        >
+          {labNumber < 6 ? `PROCEED TO LAB ${labNumber + 1} →` : '🏆 COMPLETE PART A — VIEW RESULTS'}
+        </button>
+      </div>
     </div>
   )
 }

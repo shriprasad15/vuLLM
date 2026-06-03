@@ -1,5 +1,7 @@
 import { useGame } from '../store/game'
 import type { LabStatus } from '../store/game'
+// logout clears localStorage session via store reset
+const logout = () => useGame.getState().reset()
 
 const LAB_ICONS = {
   locked: '🔒',
@@ -85,10 +87,21 @@ export function LabSidebar({ onSelectLab }: LabSidebarProps) {
         </div>
       </div>
 
-      <div className="px-4 py-3 border-t border-slate-700">
-        <a href="/leaderboard" className="font-mono text-xs text-slate-400 hover:text-amber-400 transition-colors">
+      <div className="px-4 py-3 border-t border-slate-700 space-y-2">
+        <a href="/leaderboard" className="font-mono text-xs text-slate-400 hover:text-amber-400 transition-colors block">
           LEADERBOARD →
         </a>
+        <button
+          onClick={() => {
+            if (window.confirm('Log out? Your progress is saved — log back in with your codename anytime.')) {
+              logout()
+              window.location.reload()
+            }
+          }}
+          className="font-mono text-xs text-slate-600 hover:text-red-400 transition-colors"
+        >
+          LOG OUT
+        </button>
       </div>
     </aside>
   )

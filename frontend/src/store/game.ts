@@ -3,7 +3,7 @@ import { create } from 'zustand'
 export type LabStatus = {
   lab_number: number
   title: string
-  phase: number       // 0=locked, 1=learn, 2=objective, 3=attempt, 4=debrief, 5=complete
+  phase: number
   complete: boolean
   score: number
   questions_passed: boolean
@@ -14,11 +14,34 @@ export type LabStatus = {
   redo_count?: number
 }
 
+const STORAGE_KEY = 'vulllm_session'
+
+function saveSession(userId: number, username: string, sessionId: string) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ userId, username, sessionId }))
+}
+
+function loadSession(): { userId: number; username: string; sessionId: string } | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (!raw) return null
+    return JSON.parse(raw)
+  } catch {
+    return null
+  }
+}
+
+function clearSession() {
+  localStorage.removeItem(STORAGE_KEY)
+}
+
+// Restore session from localStorage on app load
+const saved = loadSession()
+
 interface GameState {
   userId: number | null
   username: string | null
   sessionId: string | null
-  currentLab: number        // 1-6, which lab is active in view
+  currentLab: number
   labProgress: LabStatus[]
   totalScore: number
   setUser: (id: number, username: string, sessionId: string) => void
@@ -28,14 +51,20 @@ interface GameState {
 }
 
 export const useGame = create<GameState>((set) => ({
-  userId: null,
-  username: null,
-  sessionId: null,
+  userId: saved?.userId ?? null,
+  username: saved?.username ?? null,
+  sessionId: saved?.sessionId ?? null,
   currentLab: 1,
   labProgress: [],
   totalScore: 0,
-  setUser: (userId, username, sessionId) => set({ userId, username, sessionId }),
+  setUser: (userId, username, sessionId) => {
+    saveSession(userId, username, sessionId)
+    set({ userId, username, sessionId })
+  },
   setCurrentLab: (currentLab) => set({ currentLab }),
   setLabProgress: (labProgress, totalScore) => set({ labProgress, totalScore }),
-  reset: () => set({ userId: null, username: null, sessionId: null, currentLab: 1, labProgress: [], totalScore: 0 }),
+  reset: () => {
+    clearSession()
+    set({ userId: null, username: null, sessionId: null, currentLab: 1, labProgress: [], totalScore: 0 })
+  },
 }))

@@ -147,51 +147,164 @@ export function PlayerPortal() {
   }
 
   if (!userId) {
+    const LABS = [
+      { n: 1, name: 'Prompt Injection',     icon: '💉', color: 'text-red-400',    border: 'border-red-900/60' },
+      { n: 2, name: 'Jailbreak',            icon: '🔓', color: 'text-orange-400', border: 'border-orange-900/60' },
+      { n: 3, name: 'Indirect Injection',   icon: '📄', color: 'text-yellow-400', border: 'border-yellow-900/60' },
+      { n: 4, name: 'Data Leakage',         icon: '🗃️',  color: 'text-blue-400',   border: 'border-blue-900/60' },
+      { n: 5, name: 'RAG Poisoning',        icon: '☠️',  color: 'text-purple-400', border: 'border-purple-900/60' },
+    ]
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-8">
-        <div className="max-w-md w-full">
-          <div className="text-amber-400 font-mono text-xs tracking-widest mb-2">OPERATION: vuLLM</div>
-          <h1 className="text-white text-3xl font-bold font-mono mb-1">AGENT IDENTIFICATION</h1>
-          <p className="text-slate-400 font-mono text-sm mb-8">Sign in with your Google account to begin.</p>
+      <div className="min-h-screen bg-slate-950 relative overflow-hidden flex flex-col">
+        {/* Grid background */}
+        <div className="absolute inset-0 opacity-[0.04]" style={{
+          backgroundImage: 'linear-gradient(#94a3b8 1px, transparent 1px), linear-gradient(90deg, #94a3b8 1px, transparent 1px)',
+          backgroundSize: '40px 40px'
+        }} />
+        {/* Radial glow */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 right-0 w-[500px] h-[300px] bg-red-600/5 rounded-full blur-3xl pointer-events-none" />
 
-          <div className="mb-6">
-            <div className="text-slate-400 font-mono text-xs mb-3 tracking-widest">SELECT YOUR ROLE</div>
-            <div className="grid grid-cols-3 gap-2">
-              {([
-                { value: 'patient', label: 'PATIENT', desc: 'Book appointments, view own records' },
-                { value: 'doctor', label: 'DOCTOR', desc: 'Manage assigned patients, prescriptions' },
-                { value: 'admin', label: 'ADMIN', desc: 'Approve requests, manage all records' },
-              ] as const).map(r => (
-                <button
-                  key={r.value}
-                  onClick={() => setSelectedRole(r.value)}
-                  className={`p-3 rounded border font-mono text-xs text-left transition-colors ${
-                    selectedRole === r.value
-                      ? 'bg-amber-400/20 border-amber-400 text-amber-300'
-                      : 'border-slate-600 text-slate-400 hover:border-slate-500'
-                  }`}
-                >
-                  <div className="font-bold mb-1">{r.label}</div>
-                  <div className="opacity-70 text-xs leading-tight">{r.desc}</div>
-                </button>
-              ))}
+        {/* Top bar */}
+        <div className="relative border-b border-slate-800/60 px-8 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+            <span className="text-slate-500 font-mono text-xs tracking-widest">OPERATION: vuLLM — LIVE</span>
+          </div>
+          <div className="text-slate-600 font-mono text-xs">AAROGYA GENERAL HOSPITAL // AI SECURITY LAB</div>
+        </div>
+
+        <div className="relative flex-1 flex flex-col lg:flex-row">
+          {/* Left — hero */}
+          <div className="flex-1 flex flex-col justify-center px-10 py-12 lg:py-0 lg:max-w-[55%]">
+            <div className="space-y-6 max-w-xl">
+              <div className="space-y-1">
+                <div className="text-amber-400/70 font-mono text-xs tracking-[0.3em] uppercase">Classified Briefing — Eyes Only</div>
+                <h1 className="text-white font-mono font-bold leading-none" style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)' }}>
+                  OPERATION<br />
+                  <span className="text-amber-400">vuLLM</span>
+                </h1>
+              </div>
+
+              <div className="h-px bg-gradient-to-r from-amber-400/40 via-amber-400/10 to-transparent" />
+
+              <p className="text-slate-300 font-mono text-sm leading-relaxed">
+                Aarogya General Hospital has deployed <span className="text-amber-300 font-bold">BLACKBUCK</span> — an AI assistant
+                with access to the complete patient database. It is trusted. It is authoritative.
+              </p>
+              <p className="text-slate-400 font-mono text-sm leading-relaxed">
+                Your task force has been assembled to discover how BLACKBUCK can be compromised
+                before adversaries do. Five attack surfaces. Five vulnerabilities. One hospital AI.
+              </p>
+
+              {/* Lab index */}
+              <div className="space-y-2 pt-2">
+                {LABS.map(lab => (
+                  <div key={lab.n} className={`flex items-center gap-3 border ${lab.border} bg-slate-900/40 rounded px-3 py-2`}>
+                    <span className="text-base w-6 text-center flex-shrink-0">{lab.icon}</span>
+                    <span className="text-slate-500 font-mono text-xs w-4 flex-shrink-0">{lab.n}.</span>
+                    <span className={`font-mono text-xs font-medium ${lab.color}`}>{lab.name}</span>
+                    <div className="ml-auto flex gap-1">
+                      {[...Array(3)].map((_, i) => <div key={i} className="w-1 h-1 rounded-full bg-slate-700" />)}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
-          <div className="flex flex-col items-center gap-3">
-            {regLoading ? (
-              <div className="text-slate-400 font-mono text-sm">Signing in...</div>
-            ) : (
-              <GoogleLogin
-                onSuccess={handleGoogleSuccess}
-                onError={() => setRegError('Google sign-in failed. Try again.')}
-                theme="filled_black"
-                size="large"
-                text="signin_with"
-                shape="rectangular"
-              />
-            )}
-            {regError && <p className="text-red-400 font-mono text-xs">{regError}</p>}
+          {/* Right — login card */}
+          <div className="flex items-center justify-center px-8 py-12 lg:w-[45%]">
+            <div className="w-full max-w-sm">
+              <div className="bg-slate-900/80 border border-slate-700/60 rounded-xl p-8 backdrop-blur-sm space-y-6 shadow-2xl shadow-black/50">
+                {/* Card header */}
+                <div className="space-y-1 text-center">
+                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-amber-400/10 border border-amber-400/20 mb-2">
+                    <span className="text-amber-400 text-xl">⚡</span>
+                  </div>
+                  <div className="text-white font-mono font-bold text-lg">AGENT IDENTIFICATION</div>
+                  <div className="text-slate-500 font-mono text-xs">Select your access role, then authenticate</div>
+                </div>
+
+                <div className="h-px bg-slate-800" />
+
+                {/* Role selector */}
+                <div className="space-y-2">
+                  <div className="text-slate-500 font-mono text-xs tracking-widest">ACCESS ROLE</div>
+                  {([
+                    { value: 'patient', label: 'PATIENT',
+                      desc: 'Appointments · Own records',
+                      icon: '🏥', accent: 'border-blue-600 bg-blue-900/20 text-blue-300' },
+                    { value: 'doctor',  label: 'DOCTOR',
+                      desc: 'Assigned patients · Prescriptions',
+                      icon: '🩺', accent: 'border-green-600 bg-green-900/20 text-green-300' },
+                    { value: 'admin',   label: 'ADMIN',
+                      desc: 'All records · Staff management',
+                      icon: '🔑', accent: 'border-amber-500 bg-amber-900/20 text-amber-300' },
+                  ] as const).map(r => (
+                    <button
+                      key={r.value}
+                      onClick={() => setSelectedRole(r.value)}
+                      className={`w-full flex items-center gap-3 p-3 rounded-lg border transition-all ${
+                        selectedRole === r.value
+                          ? r.accent
+                          : 'border-slate-700 text-slate-400 hover:border-slate-600 hover:bg-slate-800/50'
+                      }`}
+                    >
+                      <span className="text-base flex-shrink-0">{r.icon}</span>
+                      <div className="text-left flex-1 min-w-0">
+                        <div className="font-mono font-bold text-xs">{r.label}</div>
+                        <div className="font-mono text-xs opacity-60 truncate">{r.desc}</div>
+                      </div>
+                      {selectedRole === r.value && (
+                        <div className="w-1.5 h-1.5 rounded-full bg-current flex-shrink-0" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="h-px bg-slate-800" />
+
+                {/* Google sign-in */}
+                <div className="flex flex-col items-center gap-3">
+                  {regLoading ? (
+                    <div className="flex items-center gap-2 text-slate-400 font-mono text-sm py-2">
+                      <div className="w-3 h-3 border border-amber-400 border-t-transparent rounded-full animate-spin" />
+                      Authenticating...
+                    </div>
+                  ) : (
+                    <GoogleLogin
+                      onSuccess={handleGoogleSuccess}
+                      onError={() => setRegError('Google sign-in failed. Try again.')}
+                      theme="filled_black"
+                      size="large"
+                      text="signin_with"
+                      shape="rectangular"
+                      width="280"
+                    />
+                  )}
+                  {regError && (
+                    <div className="flex items-center gap-2 text-red-400 font-mono text-xs bg-red-950/30 border border-red-900/50 rounded px-3 py-2 w-full">
+                      <span>⚠</span> {regError}
+                    </div>
+                  )}
+                </div>
+
+                <div className="text-center text-slate-600 font-mono text-xs">
+                  Progress is saved — re-authenticate to resume
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom status bar */}
+        <div className="relative border-t border-slate-800/60 px-8 py-2 flex items-center justify-between">
+          <div className="text-slate-700 font-mono text-xs">PART A — OFFENCE // 5 LABS // LLM SECURITY</div>
+          <div className="flex items-center gap-4 text-slate-700 font-mono text-xs">
+            <span>BLACKBUCK v1.0</span>
+            <span>DEMO MODE</span>
+            <div className="w-1.5 h-1.5 rounded-full bg-green-600 animate-pulse" />
           </div>
         </div>
       </div>

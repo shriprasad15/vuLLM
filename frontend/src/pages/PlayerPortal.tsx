@@ -54,8 +54,12 @@ export function PlayerPortal() {
 
   async function refreshProgress() {
     if (!userId) return
-    const data = await getLabProgress(userId)
-    setLabProgress(data.labs, data.total_score)
+    try {
+      const data = await getLabProgress(userId)
+      setLabProgress(data.labs ?? [], data.total_score ?? 0)
+    } catch {
+      setLabProgress([], 0)
+    }
   }
 
   useEffect(() => {

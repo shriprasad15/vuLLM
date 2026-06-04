@@ -29,11 +29,6 @@ const MODULE_NAMES: Record<number, string> = {
 
 export function PlayerPortal() {
   const { userId, username: _username, currentLab, labProgress, setUser, setCurrentLab, setLabProgress } = useGame()
-  const [regStep, setRegStep] = useState<'google' | 'codename'>('google')
-  const [googleCredential, setGoogleCredential] = useState('')
-  const [googleName, setGoogleName] = useState('')
-  const [googlePicture, setGooglePicture] = useState('')
-  const [usernameInput, setUsernameInput] = useState('')
   const [regError, setRegError] = useState('')
   const [regLoading, setRegLoading] = useState(false)
   const [selectedRole, setSelectedRole] = useState<'patient' | 'doctor' | 'admin'>('patient')
@@ -91,36 +86,19 @@ export function PlayerPortal() {
     }
   }
 
-  function handleGoogleSuccess(credentialResponse: { credential?: string; clientId?: string }) {
+  async function handleGoogleSuccess(credentialResponse: { credential?: string }) {
     const idToken = credentialResponse.credential
     if (!idToken) { setRegError('Google sign-in failed — no token received. Try again.'); return }
-    // Decode the JWT payload (base64) to get name/picture without an extra network call
-    try {
-      const payload = JSON.parse(atob(idToken.split('.')[1]))
-      setGoogleCredential(idToken)
-      const suggested = (payload.name || payload.email || '').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 20)
-      setGoogleName(payload.name || payload.email || '')
-      setGooglePicture(payload.picture || '')
-      setUsernameInput(suggested)
-      setRegStep('codename')
-      setRegError('')
-    } catch {
-      setRegError('Failed to read Google profile. Try again.')
-    }
-  }
-
-  async function handleRegister() {
-    const name = usernameInput.trim()
-    if (!name) { setRegError('Enter a codename to continue'); return }
-    if (name.length < 2) { setRegError('Codename must be at least 2 characters'); return }
     setRegLoading(true)
     setRegError('')
     try {
-      const data = await googleLogin(googleCredential, name, selectedRole)
+      const payload = JSON.parse(atob(idToken.split('.')[1]))
+      const username = (payload.name || payload.email || 'agent').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 30) || 'agent'
+      const data = await googleLogin(idToken, username, selectedRole)
       setUser(data.user_id, data.username, data.session_id, selectedRole)
     } catch (e: any) {
       const msg = e.message || ''
-      setRegError(msg.includes('409') ? 'Username taken — choose another' : msg)
+      setRegError(msg.includes('409') ? 'Sign-in failed — try again' : msg)
     } finally {
       setRegLoading(false)
     }
@@ -167,11 +145,36 @@ export function PlayerPortal() {
         <div className="max-w-md w-full">
           <div className="text-amber-400 font-mono text-xs tracking-widest mb-2">OPERATION: vuLLM</div>
           <h1 className="text-white text-3xl font-bold font-mono mb-1">AGENT IDENTIFICATION</h1>
-          <p className="text-slate-400 font-mono text-sm mb-8">Sign in with your institutional Google account to begin.</p>
+          <p className="text-slate-400 font-mono text-sm mb-8">Sign in with your Google account to begin.</p>
 
-          {regStep === 'google' ? (
-            /* ── Step 1: Google Sign-In ── */
-            <div className="space-y-4 flex flex-col items-center">
+          <div className="mb-6">
+            <div className="text-slate-400 font-mono text-xs mb-3 tracking-widest">SELECT YOUR ROLE</div>
+            <div className="grid grid-cols-3 gap-2">
+              {([
+                { value: 'patient', label: 'PATIENT', desc: 'Book appointments, view own records' },
+                { value: 'doctor', label: 'DOCTOR', desc: 'Manage assigned patients, prescriptions' },
+                { value: 'admin', label: 'ADMIN', desc: 'Approve requests, manage all records' },
+              ] as const).map(r => (
+                <button
+                  key={r.value}
+                  onClick={() => setSelectedRole(r.value)}
+                  className={`p-3 rounded border font-mono text-xs text-left transition-colors ${
+                    selectedRole === r.value
+                      ? 'bg-amber-400/20 border-amber-400 text-amber-300'
+                      : 'border-slate-600 text-slate-400 hover:border-slate-500'
+                  }`}
+                >
+                  <div className="font-bold mb-1">{r.label}</div>
+                  <div className="opacity-70 text-xs leading-tight">{r.desc}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex flex-col items-center gap-3">
+            {regLoading ? (
+              <div className="text-slate-400 font-mono text-sm">Signing in...</div>
+            ) : (
               <GoogleLogin
                 onSuccess={handleGoogleSuccess}
                 onError={() => setRegError('Google sign-in failed. Try again.')}
@@ -180,67 +183,9 @@ export function PlayerPortal() {
                 text="signin_with"
                 shape="rectangular"
               />
-              {regError && <p className="text-red-400 font-mono text-xs">{regError}</p>}
-            </div>
-          ) : (
-            /* ── Step 2: Choose codename + role ── */
-            <div>
-              {/* Google profile badge */}
-              <div className="flex items-center gap-3 bg-slate-800 border border-slate-700 rounded-lg p-3 mb-6">
-                {googlePicture && <img src={googlePicture} className="w-9 h-9 rounded-full" alt="" />}
-                <div>
-                  <div className="text-white font-mono text-sm">{googleName}</div>
-                  <div className="text-green-400 font-mono text-xs">✓ Google verified</div>
-                </div>
-                <button onClick={() => { setRegStep('google'); setRegError('') }} className="ml-auto text-slate-500 hover:text-slate-300 font-mono text-xs">
-                  change
-                </button>
-              </div>
-
-              <div className="text-slate-400 font-mono text-xs mb-2 tracking-widest">CHOOSE YOUR AGENT CODENAME</div>
-              <input
-                value={usernameInput}
-                onChange={e => setUsernameInput(e.target.value)}
-                placeholder="AGENT CODENAME"
-                className="w-full bg-slate-800 border border-slate-600 rounded px-4 py-3 text-green-300 font-mono text-sm focus:outline-none focus:border-amber-400 mb-3"
-                onKeyDown={e => e.key === 'Enter' && handleRegister()}
-                autoFocus
-              />
-              {regError && <p className="text-red-400 font-mono text-xs mb-3">{regError}</p>}
-
-              <div className="mb-6">
-                <div className="text-slate-400 font-mono text-xs mb-3 tracking-widest">SELECT YOUR ROLE</div>
-                <div className="grid grid-cols-3 gap-2">
-                  {([
-                    { value: 'patient', label: 'PATIENT', desc: 'Book appointments, view own records' },
-                    { value: 'doctor', label: 'DOCTOR', desc: 'Manage assigned patients, prescriptions' },
-                    { value: 'admin', label: 'ADMIN', desc: 'Approve requests, manage all records' },
-                  ] as const).map(r => (
-                    <button
-                      key={r.value}
-                      onClick={() => setSelectedRole(r.value)}
-                      className={`p-3 rounded border font-mono text-xs text-left transition-colors ${
-                        selectedRole === r.value
-                          ? 'bg-amber-400/20 border-amber-400 text-amber-300'
-                          : 'border-slate-600 text-slate-400 hover:border-slate-500'
-                      }`}
-                    >
-                      <div className="font-bold mb-1">{r.label}</div>
-                      <div className="opacity-70 text-xs leading-tight">{r.desc}</div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <button
-                onClick={handleRegister}
-                disabled={regLoading}
-                className="w-full bg-amber-400 hover:bg-amber-300 disabled:opacity-50 text-black font-bold font-mono py-3 rounded transition-colors"
-              >
-                {regLoading ? 'CONNECTING...' : 'BEGIN ASSIGNMENT'}
-              </button>
-            </div>
-          )}
+            )}
+            {regError && <p className="text-red-400 font-mono text-xs">{regError}</p>}
+          </div>
         </div>
       </div>
     )

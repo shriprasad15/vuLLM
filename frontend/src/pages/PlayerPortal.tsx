@@ -83,7 +83,7 @@ export function PlayerPortal() {
   async function handleRegister() {
     try {
       const data = await registerPlayer(usernameInput.trim())
-      setUser(data.user_id, data.username, data.session_id)
+      setUser(data.user_id, data.username, data.session_id, data.role ?? 'patient')
     } catch (e: any) {
       const msg = e.message || ''
       setRegError(msg.includes('409') ? 'Username taken — choose another' : msg)

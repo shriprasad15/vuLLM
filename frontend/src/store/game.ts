@@ -16,11 +16,11 @@ export type LabStatus = {
 
 const STORAGE_KEY = 'vulllm_session'
 
-function saveSession(userId: number, username: string, sessionId: string) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({ userId, username, sessionId }))
+function saveSession(userId: number, username: string, sessionId: string, role: string) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ userId, username, sessionId, role }))
 }
 
-function loadSession(): { userId: number; username: string; sessionId: string } | null {
+function loadSession(): { userId: number; username: string; sessionId: string; role: string } | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return null
@@ -41,10 +41,11 @@ interface GameState {
   userId: number | null
   username: string | null
   sessionId: string | null
+  role: string           // 'patient' | 'doctor' | 'admin'
   currentLab: number
   labProgress: LabStatus[]
   totalScore: number
-  setUser: (id: number, username: string, sessionId: string) => void
+  setUser: (id: number, username: string, sessionId: string, role: string) => void
   setCurrentLab: (lab: number) => void
   setLabProgress: (labs: LabStatus[], total: number) => void
   reset: () => void
@@ -54,17 +55,18 @@ export const useGame = create<GameState>((set) => ({
   userId: saved?.userId ?? null,
   username: saved?.username ?? null,
   sessionId: saved?.sessionId ?? null,
+  role: saved?.role ?? 'patient',
   currentLab: 1,
   labProgress: [],
   totalScore: 0,
-  setUser: (userId, username, sessionId) => {
-    saveSession(userId, username, sessionId)
-    set({ userId, username, sessionId })
+  setUser: (userId, username, sessionId, role) => {
+    saveSession(userId, username, sessionId, role)
+    set({ userId, username, sessionId, role })
   },
   setCurrentLab: (currentLab) => set({ currentLab }),
   setLabProgress: (labProgress, totalScore) => set({ labProgress, totalScore }),
   reset: () => {
     clearSession()
-    set({ userId: null, username: null, sessionId: null, currentLab: 1, labProgress: [], totalScore: 0 })
+    set({ userId: null, username: null, sessionId: null, role: 'patient', currentLab: 1, labProgress: [], totalScore: 0 })
   },
 }))

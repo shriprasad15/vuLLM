@@ -16,15 +16,32 @@ def get_admin(authorization: str = Header(...)):
         raise HTTPException(status_code=401, detail="Invalid admin token")
     return True
 
+def _lab_score(p, lab_content):
+    lab = lab_content.get(p.lab_number, {})
+    score = 0
+    if p.questions_passed: score += 20
+    if p.flag_submitted:
+        score += 60
+        if p.bonus_earned: score += 20
+    try:
+        hints = json.loads(p.hints_used or "[]")
+    except Exception:
+        hints = []
+    if 1 in hints: score -= lab.get("hint_costs", [5, 10])[0]
+    if 2 in hints: score -= lab.get("hint_costs", [5, 10])[1]
+    if "payload" in hints: score -= lab.get("payload_cost", 20)
+    return max(0, score)
+
 @router.get("/users")
 def list_users(db: Session = Depends(get_db), _=Depends(get_admin)):
     users = db.query(User).all()
     result = []
     for u in users:
-        flags = db.query(Flag).filter(Flag.user_id == u.id).all()
-        score = sum(f.points for f in flags)
+        progresses = db.query(LabProgress).filter(LabProgress.user_id == u.id).all()
+        score = sum(_lab_score(p, LAB_CONTENT) for p in progresses)
+        flags = sum(1 for p in progresses if p.flag_submitted)
         last = db.query(Interaction).filter(Interaction.user_id == u.id).order_by(Interaction.timestamp.desc()).first()
-        result.append({"id": u.id, "username": u.username, "score": score, "flags": len(flags),
+        result.append({"id": u.id, "username": u.username, "score": score, "flags": flags,
                        "last_prompt": last.prompt[:80] if last else None, "last_seen": str(last.timestamp) if last else None})
     return result
 

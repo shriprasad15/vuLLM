@@ -103,24 +103,26 @@ export function AdminPortal() {
               <h2 className="text-amber-400 font-mono text-sm mb-3">ACTIVE AGENTS</h2>
               <div className="space-y-2">
                 {users.map(u => (
-                  <div key={u.id} className="bg-slate-900 border border-slate-700 rounded p-3 flex items-center justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <span className="text-white font-mono">{u.username}</span>
-                      <span className="text-slate-400 font-mono text-xs ml-3 truncate">{u.last_prompt}</span>
-                    </div>
-                    <div className="flex items-center gap-3 flex-shrink-0">
-                      <div className="text-right">
-                        <div className="text-amber-400 font-mono text-sm">{u.score}pts</div>
-                        <div className="text-green-400 font-mono text-xs">{u.flags} flags</div>
+                  <div key={u.id} className="bg-slate-900 border border-slate-700 rounded p-3">
+                    <div className="flex items-center justify-between gap-3 mb-1">
+                      <span className="text-white font-mono text-sm">{u.username}</span>
+                      <div className="flex items-center gap-3 flex-shrink-0">
+                        <div className="text-right">
+                          <div className="text-amber-400 font-mono text-sm">{u.score}pts</div>
+                          <div className="text-green-400 font-mono text-xs">{u.flags} flags</div>
+                        </div>
+                        <button
+                          onClick={() => deleteUser(u.id, u.username)}
+                          className="text-red-400 hover:text-red-300 font-mono text-xs border border-red-800 hover:border-red-500 px-2 py-1 rounded transition-colors"
+                          title="Delete user"
+                        >
+                          ✕
+                        </button>
                       </div>
-                      <button
-                        onClick={() => deleteUser(u.id, u.username)}
-                        className="text-red-400 hover:text-red-300 font-mono text-xs border border-red-800 hover:border-red-500 px-2 py-1 rounded transition-colors"
-                        title="Delete user"
-                      >
-                        ✕
-                      </button>
                     </div>
+                    {u.last_prompt && (
+                      <div className="text-slate-500 font-mono text-xs truncate">{u.last_prompt}</div>
+                    )}
                   </div>
                 ))}
               </div>

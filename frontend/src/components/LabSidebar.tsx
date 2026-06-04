@@ -93,7 +93,7 @@ export function LabSidebar({ onSelectLab }: LabSidebarProps) {
         </a>
         <button
           onClick={() => {
-            if (window.confirm('Log out? Your progress is saved — log back in with your codename anytime.')) {
+            if (window.confirm('Log out? Your progress is saved — sign back in with Google anytime.')) {
               logout()
               window.location.reload()
             }

@@ -30,6 +30,7 @@ export function PlayerPortal() {
   const { userId, username: _username, currentLab, labProgress, setUser, setCurrentLab, setLabProgress } = useGame()
   const [usernameInput, setUsernameInput] = useState('')
   const [regError, setRegError] = useState('')
+  const [selectedRole, setSelectedRole] = useState<'patient' | 'doctor' | 'admin'>('patient')
   const [labContent, setLabContent] = useState<any>(null)
   const [localPhase, setLocalPhase] = useState(1)
   const [hintsUsed, setHintsUsed] = useState<(number | string)[]>([])
@@ -83,7 +84,7 @@ export function PlayerPortal() {
   async function handleRegister() {
     try {
       const data = await registerPlayer(usernameInput.trim())
-      setUser(data.user_id, data.username, data.session_id, data.role ?? 'patient')
+      setUser(data.user_id, data.username, data.session_id, selectedRole)
     } catch (e: any) {
       const msg = e.message || ''
       setRegError(msg.includes('409') ? 'Username taken — choose another' : msg)
@@ -140,6 +141,29 @@ export function PlayerPortal() {
             onKeyDown={e => e.key === 'Enter' && handleRegister()}
           />
           {regError && <p className="text-red-400 font-mono text-xs mb-3">{regError}</p>}
+          <div className="mb-6">
+            <div className="text-slate-400 font-mono text-xs mb-3 tracking-widest">SELECT YOUR ROLE</div>
+            <div className="grid grid-cols-3 gap-2">
+              {([
+                { value: 'patient', label: 'PATIENT', desc: 'Book appointments, view own records' },
+                { value: 'doctor', label: 'DOCTOR', desc: 'Manage assigned patients, prescriptions' },
+                { value: 'admin', label: 'ADMIN', desc: 'Approve requests, manage all records' },
+              ] as const).map(r => (
+                <button
+                  key={r.value}
+                  onClick={() => setSelectedRole(r.value)}
+                  className={`p-3 rounded border font-mono text-xs text-left transition-colors ${
+                    selectedRole === r.value
+                      ? 'bg-amber-400/20 border-amber-400 text-amber-300'
+                      : 'border-slate-600 text-slate-400 hover:border-slate-500'
+                  }`}
+                >
+                  <div className="font-bold mb-1">{r.label}</div>
+                  <div className="opacity-70 text-xs leading-tight">{r.desc}</div>
+                </button>
+              ))}
+            </div>
+          </div>
           <button onClick={handleRegister} className="w-full bg-amber-400 hover:bg-amber-300 text-black font-bold font-mono py-3 rounded transition-colors">
             BEGIN ASSIGNMENT
           </button>

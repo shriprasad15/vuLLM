@@ -82,8 +82,11 @@ export function PlayerPortal() {
   }
 
   async function handleRegister() {
+    const name = usernameInput.trim()
+    if (!name) { setRegError('Enter a codename to continue'); return }
+    if (name.length < 2) { setRegError('Codename must be at least 2 characters'); return }
     try {
-      const data = await registerPlayer(usernameInput.trim())
+      const data = await registerPlayer(name)
       setUser(data.user_id, data.username, data.session_id, selectedRole)
     } catch (e: any) {
       const msg = e.message || ''

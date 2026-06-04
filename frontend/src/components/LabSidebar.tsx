@@ -82,7 +82,7 @@ export function LabSidebar({ onSelectLab }: LabSidebarProps) {
         <div className="px-4 py-2">
           <div className="flex items-center gap-2 opacity-40">
             <span className="text-xs text-slate-500">🔒</span>
-            <span className="font-mono text-xs text-slate-500">Unlocks after Part A</span>
+            <span className="font-mono text-xs text-slate-500">Part B coming soon</span>
           </div>
         </div>
       </div>

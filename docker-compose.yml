@@ -6,6 +6,8 @@ services:
       - ollama_data:/root/.ollama
     ports:
       - "11434:11434"
+    environment:
+      - OLLAMA_NUM_PARALLEL=6
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
       interval: 10s
@@ -34,6 +36,25 @@ services:
       - "3000:80"
     depends_on:
       - backend
+
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+    depends_on:
+      - backend
+    profiles:
+      - tunnel
+
+  # Quick tunnel (no account needed — temporary URL printed to logs)
+  tunnel-quick:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate --url http://backend:8000
+    depends_on:
+      - backend
+    profiles:
+      - quick-tunnel
 
 volumes:
   ollama_data:

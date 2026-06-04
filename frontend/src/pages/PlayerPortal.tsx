@@ -14,8 +14,7 @@ const MODULE_MAP: Record<number, string> = {
   2: 'jailbreak',
   3: 'indirect_injection',
   4: 'data_leakage',
-  5: 'multi_turn',
-  6: 'rag_poisoning',
+  5: 'rag_poisoning',
 }
 
 const MODULE_NAMES: Record<number, string> = {
@@ -23,8 +22,7 @@ const MODULE_NAMES: Record<number, string> = {
   2: 'Jailbreak',
   3: 'Indirect Injection',
   4: 'Data Leakage',
-  5: 'Multi-Turn Manipulation',
-  6: 'RAG Poisoning',
+  5: 'RAG Poisoning',
 }
 
 export function PlayerPortal() {
@@ -140,7 +138,7 @@ export function PlayerPortal() {
   }
 
   function handleLabComplete() {
-    if (currentLab < 6) {
+    if (currentLab < 5) {
       setCurrentLab(currentLab + 1)
     } else {
       setShowPartAComplete(true)
@@ -217,7 +215,7 @@ export function PlayerPortal() {
             <div className="bg-green-900/30 border border-green-500 rounded-lg p-6 text-center">
               <div className="text-green-400 font-mono text-sm mb-1">FINAL SCORE — PART A</div>
               <div className="text-amber-400 font-mono text-5xl font-bold">{totalScore}</div>
-              <div className="text-slate-400 font-mono text-xs mt-1">out of 600 points</div>
+              <div className="text-slate-400 font-mono text-xs mt-1">out of 500 points</div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
@@ -311,9 +309,9 @@ export function PlayerPortal() {
         ) : localPhase === 3 ? (
           <div className="flex overflow-hidden" style={{ height: 'calc(100vh - 0px)' }}>
             {/* Left panel — problem statement (wider for RAG lab to fit KB viewer) */}
-            <div className={`${currentLab === 6 ? 'w-[520px]' : 'w-96'} flex-shrink-0 border-r border-slate-700 overflow-y-auto p-6 space-y-5`}>
+            <div className={`${currentLab === 5 ? 'w-[520px]' : 'w-96'} flex-shrink-0 border-r border-slate-700 overflow-y-auto p-6 space-y-5`}>
               <div>
-                <div className="text-amber-400 font-mono text-xs tracking-widest mb-1">LAB {currentLab} OF 6 — PHASE 3: ATTEMPT</div>
+                <div className="text-amber-400 font-mono text-xs tracking-widest mb-1">LAB {currentLab} OF 5 — PHASE 3: ATTEMPT</div>
                 <h2 className="text-white font-mono text-lg font-bold">{labContent.title}</h2>
               </div>
               <div className="h-1 bg-slate-700 rounded-full">
@@ -358,7 +356,7 @@ export function PlayerPortal() {
                 })}
               </div>
               {/* RAG Knowledge Base Viewer — only for Lab 6 */}
-              {currentLab === 6 && (
+              {currentLab === 5 && (
                 <div className="space-y-3">
                   <div className="text-red-400 font-mono text-xs tracking-widest">BLACKBUCK KNOWLEDGE BASE</div>
                   <p className="text-slate-500 font-mono text-xs">BLACKBUCK retrieves from these documents before answering. One has been tampered with.</p>

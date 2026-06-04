@@ -197,7 +197,7 @@ export function AdminPortal() {
                 <thead className="bg-slate-800 text-amber-400">
                   <tr>
                     <th className="px-3 py-2 text-left">AGENT</th>
-                    {[1,2,3,4,5,6].map(n => (
+                    {[1,2,3,4,5].map(n => (
                       <th key={n} className="px-3 py-2 text-center">LAB {n}</th>
                     ))}
                     <th className="px-3 py-2 text-right">TOTAL</th>
@@ -207,7 +207,7 @@ export function AdminPortal() {
                   {submissions.map(s => (
                     <tr key={s.user_id} className="border-t border-slate-800 hover:bg-slate-800/50">
                       <td className="px-3 py-2 text-white">{s.username}</td>
-                      {[1,2,3,4,5,6].map(n => {
+                      {[1,2,3,4,5].map(n => {
                         const lab = s.labs[n]
                         return (
                           <td key={n} className="px-3 py-2 text-center">
@@ -228,7 +228,7 @@ export function AdminPortal() {
                     </tr>
                   ))}
                   {submissions.length === 0 && (
-                    <tr><td colSpan={8} className="px-3 py-4 text-center text-slate-500">No submissions yet.</td></tr>
+                    <tr><td colSpan={7} className="px-3 py-4 text-center text-slate-500">No submissions yet.</td></tr>
                   )}
                 </tbody>
               </table>

@@ -24,6 +24,7 @@ services:
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:-changeme}
       - JWT_SECRET=${JWT_SECRET:-supersecretkey}
       - DATABASE_URL=sqlite:///./vulllm.db
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
     volumes:
       - ./backend/vulllm.db:/app/vulllm.db
     depends_on:

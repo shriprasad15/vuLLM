@@ -8,6 +8,10 @@ class User(Base):
     session_id = Column(String, nullable=False)
     ip_address = Column(String)
     created_at = Column(DateTime, default=func.now())
+    # Google OAuth fields (nullable — existing users without OAuth still work)
+    google_id = Column(String, unique=True, nullable=True)
+    email = Column(String, nullable=True)
+    picture = Column(String, nullable=True)
 
 class Interaction(Base):
     __tablename__ = "interactions"

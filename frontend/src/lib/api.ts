@@ -25,6 +25,12 @@ export async function registerPlayer(username: string) {
   return r.json()
 }
 
+export async function googleLogin(credential: string, username: string, role: string) {
+  const r = await fetch(`${BASE}/auth/google`, { method: 'POST', headers: headers({ 'Content-Type': 'application/json' }), body: JSON.stringify({ credential, username, role }) })
+  if (!r.ok) throw new Error(await r.text())
+  return r.json()
+}
+
 export async function runAttack(module: string, userId: number, prompt: string, history: {role:string,content:string}[], defenseTier: number, role: string = 'patient') {
   const r = await fetch(`${BASE}/attacks/${module}`, { method: 'POST', headers: headers({ 'Content-Type': 'application/json' }), body: JSON.stringify({ user_id: userId, module, prompt, history, defense_tier: defenseTier, role }) })
   if (!r.ok) throw new Error(await r.text())

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useGame } from '../store/game'
-import { registerPlayer, getLabProgress, getLabContent, startLab } from '../lib/api'
+import { useGoogleLogin } from '@react-oauth/google'
+import { googleLogin, getLabProgress, getLabContent, startLab } from '../lib/api'
 import { LabSidebar } from '../components/LabSidebar'
 import { LearnPhase } from '../components/LearnPhase'
 import { ObjectiveCard } from '../components/ObjectiveCard'
@@ -28,8 +29,13 @@ const MODULE_NAMES: Record<number, string> = {
 
 export function PlayerPortal() {
   const { userId, username: _username, currentLab, labProgress, setUser, setCurrentLab, setLabProgress } = useGame()
+  const [regStep, setRegStep] = useState<'google' | 'codename'>('google')
+  const [googleCredential, setGoogleCredential] = useState('')
+  const [googleName, setGoogleName] = useState('')
+  const [googlePicture, setGooglePicture] = useState('')
   const [usernameInput, setUsernameInput] = useState('')
   const [regError, setRegError] = useState('')
+  const [regLoading, setRegLoading] = useState(false)
   const [selectedRole, setSelectedRole] = useState<'patient' | 'doctor' | 'admin'>('patient')
   const [labContent, setLabContent] = useState<any>(null)
   const [localPhase, setLocalPhase] = useState(1)
@@ -81,16 +87,41 @@ export function PlayerPortal() {
     }
   }
 
+  const handleGoogleSuccess = useGoogleLogin({
+    onSuccess: (tokenResponse) => {
+      // Fetch profile info using the access token
+      fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+        headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
+      })
+        .then(r => r.json())
+        .then(info => {
+          setGoogleCredential(tokenResponse.access_token)
+          const suggested = (info.name || info.email || '').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 20)
+          setGoogleName(info.name || '')
+          setGooglePicture(info.picture || '')
+          setUsernameInput(suggested)
+          setRegStep('codename')
+          setRegError('')
+        })
+        .catch(() => setRegError('Failed to fetch Google profile. Try again.'))
+    },
+    onError: () => setRegError('Google sign-in failed. Try again.'),
+  })
+
   async function handleRegister() {
     const name = usernameInput.trim()
     if (!name) { setRegError('Enter a codename to continue'); return }
     if (name.length < 2) { setRegError('Codename must be at least 2 characters'); return }
+    setRegLoading(true)
+    setRegError('')
     try {
-      const data = await registerPlayer(name)
+      const data = await googleLogin(googleCredential, name, selectedRole)
       setUser(data.user_id, data.username, data.session_id, selectedRole)
     } catch (e: any) {
       const msg = e.message || ''
       setRegError(msg.includes('409') ? 'Username taken — choose another' : msg)
+    } finally {
+      setRegLoading(false)
     }
   }
 
@@ -135,41 +166,84 @@ export function PlayerPortal() {
         <div className="max-w-md w-full">
           <div className="text-amber-400 font-mono text-xs tracking-widest mb-2">OPERATION: vuLLM</div>
           <h1 className="text-white text-3xl font-bold font-mono mb-1">AGENT IDENTIFICATION</h1>
-          <p className="text-slate-400 font-mono text-sm mb-8">Enter your codename to begin the assignment.</p>
-          <input
-            value={usernameInput}
-            onChange={e => setUsernameInput(e.target.value)}
-            placeholder="AGENT CODENAME"
-            className="w-full bg-slate-800 border border-slate-600 rounded px-4 py-3 text-green-300 font-mono text-sm focus:outline-none focus:border-amber-400 mb-3"
-            onKeyDown={e => e.key === 'Enter' && handleRegister()}
-          />
-          {regError && <p className="text-red-400 font-mono text-xs mb-3">{regError}</p>}
-          <div className="mb-6">
-            <div className="text-slate-400 font-mono text-xs mb-3 tracking-widest">SELECT YOUR ROLE</div>
-            <div className="grid grid-cols-3 gap-2">
-              {([
-                { value: 'patient', label: 'PATIENT', desc: 'Book appointments, view own records' },
-                { value: 'doctor', label: 'DOCTOR', desc: 'Manage assigned patients, prescriptions' },
-                { value: 'admin', label: 'ADMIN', desc: 'Approve requests, manage all records' },
-              ] as const).map(r => (
-                <button
-                  key={r.value}
-                  onClick={() => setSelectedRole(r.value)}
-                  className={`p-3 rounded border font-mono text-xs text-left transition-colors ${
-                    selectedRole === r.value
-                      ? 'bg-amber-400/20 border-amber-400 text-amber-300'
-                      : 'border-slate-600 text-slate-400 hover:border-slate-500'
-                  }`}
-                >
-                  <div className="font-bold mb-1">{r.label}</div>
-                  <div className="opacity-70 text-xs leading-tight">{r.desc}</div>
-                </button>
-              ))}
+          <p className="text-slate-400 font-mono text-sm mb-8">Sign in with your institutional Google account to begin.</p>
+
+          {regStep === 'google' ? (
+            /* ── Step 1: Google Sign-In ── */
+            <div className="space-y-4">
+              <button
+                onClick={() => handleGoogleSuccess()}
+                className="w-full flex items-center justify-center gap-3 bg-white hover:bg-slate-100 text-slate-800 font-semibold py-3 px-4 rounded transition-colors"
+              >
+                <svg className="w-5 h-5" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                Sign in with Google
+              </button>
+              {regError && <p className="text-red-400 font-mono text-xs">{regError}</p>}
             </div>
-          </div>
-          <button onClick={handleRegister} className="w-full bg-amber-400 hover:bg-amber-300 text-black font-bold font-mono py-3 rounded transition-colors">
-            BEGIN ASSIGNMENT
-          </button>
+          ) : (
+            /* ── Step 2: Choose codename + role ── */
+            <div>
+              {/* Google profile badge */}
+              <div className="flex items-center gap-3 bg-slate-800 border border-slate-700 rounded-lg p-3 mb-6">
+                {googlePicture && <img src={googlePicture} className="w-9 h-9 rounded-full" alt="" />}
+                <div>
+                  <div className="text-white font-mono text-sm">{googleName}</div>
+                  <div className="text-green-400 font-mono text-xs">✓ Google verified</div>
+                </div>
+                <button onClick={() => { setRegStep('google'); setRegError('') }} className="ml-auto text-slate-500 hover:text-slate-300 font-mono text-xs">
+                  change
+                </button>
+              </div>
+
+              <div className="text-slate-400 font-mono text-xs mb-2 tracking-widest">CHOOSE YOUR AGENT CODENAME</div>
+              <input
+                value={usernameInput}
+                onChange={e => setUsernameInput(e.target.value)}
+                placeholder="AGENT CODENAME"
+                className="w-full bg-slate-800 border border-slate-600 rounded px-4 py-3 text-green-300 font-mono text-sm focus:outline-none focus:border-amber-400 mb-3"
+                onKeyDown={e => e.key === 'Enter' && handleRegister()}
+                autoFocus
+              />
+              {regError && <p className="text-red-400 font-mono text-xs mb-3">{regError}</p>}
+
+              <div className="mb-6">
+                <div className="text-slate-400 font-mono text-xs mb-3 tracking-widest">SELECT YOUR ROLE</div>
+                <div className="grid grid-cols-3 gap-2">
+                  {([
+                    { value: 'patient', label: 'PATIENT', desc: 'Book appointments, view own records' },
+                    { value: 'doctor', label: 'DOCTOR', desc: 'Manage assigned patients, prescriptions' },
+                    { value: 'admin', label: 'ADMIN', desc: 'Approve requests, manage all records' },
+                  ] as const).map(r => (
+                    <button
+                      key={r.value}
+                      onClick={() => setSelectedRole(r.value)}
+                      className={`p-3 rounded border font-mono text-xs text-left transition-colors ${
+                        selectedRole === r.value
+                          ? 'bg-amber-400/20 border-amber-400 text-amber-300'
+                          : 'border-slate-600 text-slate-400 hover:border-slate-500'
+                      }`}
+                    >
+                      <div className="font-bold mb-1">{r.label}</div>
+                      <div className="opacity-70 text-xs leading-tight">{r.desc}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <button
+                onClick={handleRegister}
+                disabled={regLoading}
+                className="w-full bg-amber-400 hover:bg-amber-300 disabled:opacity-50 text-black font-bold font-mono py-3 rounded transition-colors"
+              >
+                {regLoading ? 'CONNECTING...' : 'BEGIN ASSIGNMENT'}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     )

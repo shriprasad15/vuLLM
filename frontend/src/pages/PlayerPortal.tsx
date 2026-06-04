@@ -315,7 +315,7 @@ export function PlayerPortal() {
     )
   }
 
-  const currentLabData = labProgress.find(l => l.lab_number === currentLab)
+  const currentLabData = (labProgress ?? []).find(l => l.lab_number === currentLab)
   const isLocked = currentLabData?.locked ?? (currentLab > 1)
 
   return (

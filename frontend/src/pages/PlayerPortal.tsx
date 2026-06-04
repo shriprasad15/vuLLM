@@ -42,37 +42,44 @@ export function PlayerPortal() {
   const [showLeaderboard, setShowLeaderboard] = useState(false)
   const [showPartAComplete, setShowPartAComplete] = useState(false)
 
+  // On initial load: fetch progress first, then load the lab using fresh data
   useEffect(() => {
     if (!userId) return
-    refreshProgress()
+    refreshProgress().then(labs => {
+      if (labs) loadLab(currentLab, labs)
+    })
   }, [userId])
 
-  async function refreshProgress() {
-    if (!userId) return
+  async function refreshProgress(): Promise<typeof labProgress | null> {
+    if (!userId) return null
     try {
       const data = await getLabProgress(userId)
-      setLabProgress(data.labs ?? [], data.total_score ?? 0)
+      const labs = data.labs ?? []
+      setLabProgress(labs, data.total_score ?? 0)
+      return labs
     } catch {
       setLabProgress([], 0)
+      return null
     }
   }
 
+  // On lab switch: labProgress is already populated, use it directly
   useEffect(() => {
     if (!userId || !currentLab) return
-    loadLab(currentLab)
-  }, [currentLab, userId])
+    loadLab(currentLab, labProgress)
+  }, [currentLab])
 
-  async function loadLab(labNum: number) {
+  async function loadLab(labNum: number, progress = labProgress) {
     try {
       const [content] = await Promise.all([
         getLabContent(labNum, userId!),
         startLab(labNum, userId!),
       ])
       setLabContent(content)
-      const prog = labProgress.find(l => l.lab_number === labNum)
+      const prog = progress.find(l => l.lab_number === labNum)
       if (prog?.flag_submitted) {
         setLocalPhase(4)
-        setLabScore(prog.score ?? 0)  // restore score when viewing a completed lab
+        setLabScore(prog.score ?? 0)
       } else if (prog?.questions_passed) {
         setLocalPhase(2)
       } else {

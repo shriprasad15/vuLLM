@@ -21,7 +21,7 @@ function extractFlag(text: string): string | null {
 }
 
 export function AttackPanel({ labNumber, module, moduleName, hintsUsed: _hintsUsed, unlockedHints, onFlagCaptured, payloadCost }: AttackPanelProps) {
-  const { userId } = useGame()
+  const { userId, role } = useGame()
   const defenseTier = 0
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
@@ -74,7 +74,7 @@ export function AttackPanel({ labNumber, module, moduleName, hintsUsed: _hintsUs
     setMessages(prev => [...prev, userMsg])
     setLoading(true)
     try {
-      const data = await uploadPdfAndAttack(file, userId, defenseTier)
+      const data = await uploadPdfAndAttack(file, userId, defenseTier, 'demo', role)
       const assistantMsg: Message = { role: 'assistant', content: data.response }
       setMessages(prev => [...prev, assistantMsg])
       if (data.flag_earned) {
@@ -101,7 +101,7 @@ export function AttackPanel({ labNumber, module, moduleName, hintsUsed: _hintsUs
     setInput('')
     setLoading(true)
     try {
-      const result = await runAttack(module, userId, input, messages, defenseTier)
+      const result = await runAttack(module, userId, input, messages, defenseTier, role)
       const assistantMsg: Message = { role: 'assistant', content: result.response }
       setMessages([...newHistory, assistantMsg])
       if (result.flag_earned) {

@@ -25,8 +25,8 @@ export async function registerPlayer(username: string) {
   return r.json()
 }
 
-export async function runAttack(module: string, userId: number, prompt: string, history: {role:string,content:string}[], defenseTier: number) {
-  const r = await fetch(`${BASE}/attacks/${module}`, { method: 'POST', headers: headers({ 'Content-Type': 'application/json' }), body: JSON.stringify({ user_id: userId, module, prompt, history, defense_tier: defenseTier }) })
+export async function runAttack(module: string, userId: number, prompt: string, history: {role:string,content:string}[], defenseTier: number, role: string = 'patient') {
+  const r = await fetch(`${BASE}/attacks/${module}`, { method: 'POST', headers: headers({ 'Content-Type': 'application/json' }), body: JSON.stringify({ user_id: userId, module, prompt, history, defense_tier: defenseTier, role }) })
   if (!r.ok) throw new Error(await r.text())
   return r.json()
 }
@@ -122,10 +122,10 @@ export async function submitFlag(labNumber: number, userId: number, flag: string
   return r.json()
 }
 
-export async function uploadPdfAndAttack(file: File, userId: number, defenseTier: number = 0, mode: string = 'demo') {
+export async function uploadPdfAndAttack(file: File, userId: number, defenseTier: number = 0, mode: string = 'demo', role: string = 'patient') {
   const form = new FormData()
   form.append('file', file)
-  const url = `${BASE}/pdf/indirect-injection/upload-pdf?user_id=${userId}&defense_tier=${defenseTier}&mode=${mode}`
+  const url = `${BASE}/pdf/indirect-injection/upload-pdf?user_id=${userId}&defense_tier=${defenseTier}&mode=${mode}&role=${role}`
   const r = await fetch(url, { method: 'POST', headers: headers(), body: form })
   if (!r.ok) throw new Error(await r.text())
   return r.json()

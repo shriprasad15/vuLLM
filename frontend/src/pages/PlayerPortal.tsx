@@ -92,13 +92,15 @@ export function PlayerPortal() {
     setRegLoading(true)
     setRegError('')
     try {
-      const payload = JSON.parse(atob(idToken.split('.')[1]))
+      // base64url → base64 (add padding, replace URL-safe chars)
+      const b64 = idToken.split('.')[1].replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(idToken.split('.')[1].length / 4) * 4, '=')
+      const payload = JSON.parse(atob(b64))
       const username = (payload.name || payload.email || 'agent').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 30) || 'agent'
       const data = await googleLogin(idToken, username, selectedRole)
       setUser(data.user_id, data.username, data.session_id, selectedRole)
     } catch (e: any) {
       const msg = e.message || ''
-      setRegError(msg.includes('409') ? 'Sign-in failed — try again' : msg)
+      setRegError(msg.includes('409') ? 'Sign-in failed — try again' : 'Sign-in failed: ' + msg)
     } finally {
       setRegLoading(false)
     }

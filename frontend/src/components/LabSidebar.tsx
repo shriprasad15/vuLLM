@@ -1,7 +1,15 @@
 import { useGame } from '../store/game'
 import type { LabStatus } from '../store/game'
-// logout clears localStorage session via store reset
+
 const logout = () => useGame.getState().reset()
+
+const LAB_TITLES: Record<number, string> = {
+  1: 'Prompt Injection',
+  2: 'Jailbreak',
+  3: 'Indirect Injection',
+  4: 'Data Leakage',
+  5: 'RAG Poisoning',
+}
 
 const LAB_ICONS = {
   locked: '🔒',
@@ -35,7 +43,12 @@ export function LabSidebar({ onSelectLab }: LabSidebarProps) {
         <div className="px-4 mb-2">
           <span className="text-slate-500 font-mono text-xs tracking-widest">PART A — OFFENCE</span>
         </div>
-        {labProgress.map((lab) => {
+        {[1,2,3,4,5].map((n) => {
+          const lab: LabStatus = labProgress.find(l => l.lab_number === n) ?? {
+            lab_number: n, title: LAB_TITLES[n], phase: 0, complete: false,
+            score: 0, questions_passed: false, flag_submitted: false,
+            hints_used: [], locked: n > 1,
+          }
           const status = statusOf(lab, currentLab)
           const isActive = lab.lab_number === currentLab
           const isClickable = !lab.locked

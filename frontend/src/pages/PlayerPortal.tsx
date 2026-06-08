@@ -137,13 +137,15 @@ export function PlayerPortal() {
     refreshProgress()
   }
 
-  function handleLabComplete() {
+  async function handleLabComplete() {
+    const freshLabs = await refreshProgress()
     if (currentLab < 5) {
-      setCurrentLab(currentLab + 1)
+      const nextLabNum = currentLab + 1
+      setCurrentLab(nextLabNum)
+      if (freshLabs) loadLab(nextLabNum, freshLabs)
     } else {
       setShowPartAComplete(true)
     }
-    refreshProgress()
   }
 
   if (!userId) {

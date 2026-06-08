@@ -49,9 +49,9 @@ export function DebriefPhase({ labNumber, title, debrief, score, bonus, onComple
         </button>
         <button
           onClick={onComplete}
-          className={`flex-1 font-bold font-mono py-3 rounded transition-colors ${labNumber < 6 ? 'bg-amber-400 hover:bg-amber-300 text-black' : 'bg-green-500 hover:bg-green-400 text-black text-lg'}`}
+          className={`flex-1 font-bold font-mono py-3 rounded transition-colors ${labNumber < 5 ? 'bg-amber-400 hover:bg-amber-300 text-black' : 'bg-green-500 hover:bg-green-400 text-black text-lg'}`}
         >
-          {labNumber < 6 ? `PROCEED TO LAB ${labNumber + 1} →` : '🏆 COMPLETE PART A — VIEW RESULTS'}
+          {labNumber < 5 ? `PROCEED TO LAB ${labNumber + 1} →` : '🏆 FINISH PART A — VIEW RESULTS'}
         </button>
       </div>
     </div>

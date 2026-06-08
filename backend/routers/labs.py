@@ -55,7 +55,7 @@ def get_progress(user_id: int, db: Session = Depends(get_db)):
     if not user:
         return {"labs": [], "total_score": 0}
     result = []
-    for lab_num in range(1, 7):
+    for lab_num in range(1, 6):
         p = db.query(LabProgress).filter(
             LabProgress.user_id == user_id,
             LabProgress.lab_number == lab_num

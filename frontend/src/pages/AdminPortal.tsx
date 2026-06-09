@@ -27,12 +27,19 @@ export function AdminPortal() {
 
   async function loadData() {
     const [u, i, s, g, sub] = await Promise.all([adminGet('/users', token), adminGet('/interactions', token), adminGet('/settings', token), adminGet('/global', token), adminGetSubmissions(token)])
-    setUsers(u); setInteractions(i)
+    // If any response is a 401 object, token has expired — force re-login
+    if (u?.detail === 'Not authenticated' || u?.detail === 'Invalid token') {
+      sessionStorage.removeItem('admin_token')
+      setToken('')
+      return
+    }
+    setUsers(Array.isArray(u) ? u : [])
+    setInteractions(Array.isArray(i) ? i : [])
     const sm: Record<number,any> = {}
-    s.forEach((x: any) => { sm[x.act] = x })
+    if (Array.isArray(s)) s.forEach((x: any) => { sm[x.act] = x })
     setSettings(sm)
     if (g?.blackbuck_mode) setBlackbuckMode(g.blackbuck_mode)
-    setSubmissions(sub)
+    setSubmissions(Array.isArray(sub) ? sub : [])
   }
 
   useEffect(() => {

@@ -75,6 +75,17 @@ def update_settings(act: int, body: SettingsUpdate, db: Session = Depends(get_db
 def get_settings(db: Session = Depends(get_db), _=Depends(get_admin)):
     return db.query(AdminSettings).all()
 
+@router.delete("/users")
+def delete_all_users(db: Session = Depends(get_db), _=Depends(get_admin)):
+    """Delete ALL users and their data. Irreversible."""
+    db.query(Flag).delete()
+    db.query(Interaction).delete()
+    db.query(LabProgress).delete()
+    db.query(User).delete()
+    db.commit()
+    return {"message": "All users deleted"}
+
+
 @router.post("/reset")
 def reset_user(user_id: Optional[int] = None, db: Session = Depends(get_db), _=Depends(get_admin)):
     q_flags = db.query(Flag)

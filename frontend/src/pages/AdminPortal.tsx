@@ -113,7 +113,21 @@ export function AdminPortal() {
         {tab === 'monitor' && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div>
-              <h2 className="text-amber-400 font-mono text-sm mb-3">ACTIVE AGENTS</h2>
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-amber-400 font-mono text-sm">ACTIVE AGENTS</h2>
+                {users.length > 0 && (
+                  <button
+                    onClick={async () => {
+                      if (!confirm(`Delete ALL ${users.length} users and their data? This cannot be undone.`)) return
+                      await adminDelete('/users', token)
+                      loadData()
+                    }}
+                    className="text-red-400 hover:text-red-300 font-mono text-xs border border-red-800 hover:border-red-500 px-2 py-1 rounded transition-colors"
+                  >
+                    DELETE ALL
+                  </button>
+                )}
+              </div>
               <div className="space-y-2">
                 {users.map(u => (
                   <div key={u.id} className="bg-slate-900 border border-slate-700 rounded p-3">

@@ -17,6 +17,7 @@ class AttackRequest(BaseModel):
     history: list[dict] = []
     defense_tier: int = 0
     role: str = "patient"
+    use_poisoned: bool = True  # RAG poisoning: False = AFC clean query, True = Warfarin poisoned query
 
 @router.post("/{module}")
 async def run_attack(module: str, req: AttackRequest, db: Session = Depends(get_db)):
@@ -34,7 +35,10 @@ async def run_attack(module: str, req: AttackRequest, db: Session = Depends(get_
 
     mod = importlib.import_module(f"modules.{module}")
     importlib.reload(mod)
-    result = await mod.run(req.prompt, req.history, effective_tier, mode=mode, role=req.role)
+    kwargs = {"mode": mode, "role": req.role}
+    if module == "rag_poisoning":
+        kwargs["use_poisoned"] = req.use_poisoned
+    result = await mod.run(req.prompt, req.history, effective_tier, **kwargs)
 
     # Append flag visibly to BLACKBUCK's response when attack succeeds
     # so the student can see and copy it directly from the chat

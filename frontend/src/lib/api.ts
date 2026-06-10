@@ -31,8 +31,8 @@ export async function playerLogin(username: string, pin: string, role: string) {
   return r.json()
 }
 
-export async function runAttack(module: string, userId: number, prompt: string, history: {role:string,content:string}[], defenseTier: number, role: string = 'patient') {
-  const r = await fetch(`${BASE}/attacks/${module}`, { method: 'POST', headers: headers({ 'Content-Type': 'application/json' }), body: JSON.stringify({ user_id: userId, module, prompt, history, defense_tier: defenseTier, role }) })
+export async function runAttack(module: string, userId: number, prompt: string, history: {role:string,content:string}[], defenseTier: number, role: string = 'patient', usePoisoned: boolean = true) {
+  const r = await fetch(`${BASE}/attacks/${module}`, { method: 'POST', headers: headers({ 'Content-Type': 'application/json' }), body: JSON.stringify({ user_id: userId, module, prompt, history, defense_tier: defenseTier, role, use_poisoned: usePoisoned }) })
   if (!r.ok) throw new Error(await r.text())
   return r.json()
 }

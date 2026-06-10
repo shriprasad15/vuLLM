@@ -1,78 +1,34 @@
 import { useState } from 'react'
-import { QRCodeSVG } from 'qrcode.react'
 import { submitQuestions } from '../lib/api'
 import { useGame } from '../store/game'
 
 const BLACKBUCK_INTRO = "BLACKBUCK is an AI assistant deployed at Aarogya General Hospital — a large multi-specialty hospital serving thousands of patients. BLACKBUCK assists Patients (booking appointments, viewing own records), Doctors (managing assigned patients, prescriptions), and Admins (approving requests, managing all records). It has been given confidential access to the full patient database. In this assignment, you will discover and exploit the security vulnerabilities that arise when deploying an AI in a high-stakes clinical environment where patient privacy and medication safety are at stake."
 
-interface Incident {
-  image: string | null   // path or URL to image — null shows placeholder
-  caption: string        // short label shown under image
-  source: string | null  // URL — shown as plain text + QR code
-}
-
 interface LabConcept {
   what: string
   why: string
-  realWorld: string
-  incidents: Incident[]
 }
 
-// ─── TO ADD INCIDENTS ─────────────────────────────────────────────────────────
-// Set image: "/images/lab1-a.png" (put files in frontend/public/images/)
-//       or:  "https://example.com/screenshot.png"
-// Set source: "https://arxiv.org/abs/..." (shown as plain text + scannable QR)
-// ─────────────────────────────────────────────────────────────────────────────
 const LAB_CONCEPTS: Record<number, LabConcept> = {
   1: {
     what: "Prompt injection embeds hidden instructions inside an otherwise normal patient request to override BLACKBUCK's access controls. A patient booking an appointment can simultaneously embed a command telling BLACKBUCK to reveal all patient records — and BLACKBUCK may follow both instructions.",
     why: "BLACKBUCK, like all LLMs, processes every token in its context window the same way. There is no cryptographic separation between 'trusted hospital system instructions' and 'untrusted patient input'. If you embed an override instruction inside your appointment request, BLACKBUCK may follow it just as faithfully as its original patient privacy guidelines.",
-    realWorld: "In 2023, researchers demonstrated that AI medical assistants could be hijacked by embedding instructions in patient-submitted forms. The AI would leak other patients' records while appearing to process the form normally. The same attack surface exists in BLACKBUCK.",
-    incidents: [
-      { image: null, caption: "Incident 1 — add screenshot or image here", source: null },
-      { image: null, caption: "Incident 2 — add screenshot or image here", source: null },
-      { image: null, caption: "Incident 3 — add screenshot or image here", source: null },
-    ],
   },
   2: {
     what: "Jailbreaking convinces BLACKBUCK to abandon its hospital role and adopt an alternative persona — typically one with 'no privacy restrictions' or 'emergency access'. Instead of directly asking BLACKBUCK to break its rules, the attacker asks it to become a different AI that doesn't have those rules.",
     why: "BLACKBUCK's privacy guidelines were applied through fine-tuning — they are learned statistical patterns, not hard-coded rules. When a request is reframed as roleplay ('you are DOCBOT'), the model may not recognise it as a policy violation because the framing shifts away from the patterns it was trained to refuse.",
-    realWorld: "Researchers have used persona-swap jailbreaks to extract patient data from healthcare AI assistants, bypassing HIPAA-compliant privacy guardrails. The 'DAN' technique and its variations remain effective against hospital AI systems that prioritise helpfulness in their training.",
-    incidents: [
-      { image: null, caption: "Incident 1 — add screenshot or image here", source: null },
-      { image: null, caption: "Incident 2 — add screenshot or image here", source: null },
-      { image: null, caption: "Incident 3 — add screenshot or image here", source: null },
-    ],
   },
   3: {
     what: "Indirect prompt injection hides malicious instructions inside a document BLACKBUCK is asked to process — a patient consent form, a referral letter, or a medical report. The attack comes from the data, not the patient's message. BLACKBUCK processes the document and executes the hidden instruction.",
     why: "When BLACKBUCK reads a patient consent form or referral letter, that document's text is loaded into its context window alongside its hospital guidelines. BLACKBUCK cannot label some text as 'data to process' and other text as 'instructions not to execute'. Any instruction-like text in a document gets treated with the same weight as a legitimate system instruction.",
-    realWorld: "Researchers demonstrated hijacking hospital AI assistants by embedding instructions in patient-uploaded PDFs. The AI would process the form while simultaneously leaking other patients' records — without either the patient or the hospital staff noticing.",
-    incidents: [
-      { image: null, caption: "Incident 1 — add screenshot or image here", source: null },
-      { image: null, caption: "Incident 2 — add screenshot or image here", source: null },
-      { image: null, caption: "Incident 3 — add screenshot or image here", source: null },
-    ],
   },
   4: {
     what: "System prompt extraction tricks BLACKBUCK into revealing its confidential configuration — which includes the full patient database. BLACKBUCK's system prompt contains every patient's name, diagnosis, medications, and doctor assignment. Extracting it is a direct DPDP Act violation and exposes the entire hospital's patient records.",
     why: "BLACKBUCK's system prompt is simply text prepended to its context window. The model was trained to be helpful and to complete text patterns — it has no cryptographic mechanism preventing it from reproducing its own configuration. A carefully framed 'compliance audit' request or sentence completion attack can cause it to repeat the full patient database.",
-    realWorld: "Security researchers have extracted patient database contents from healthcare AI assistants by framing requests as HIPAA compliance audits or data verification exercises. The AI reproduces the database with full confidence, believing it is performing a legitimate administrative task.",
-    incidents: [
-      { image: null, caption: "Incident 1 — add screenshot or image here", source: null },
-      { image: null, caption: "Incident 2 — add screenshot or image here", source: null },
-      { image: null, caption: "Incident 3 — add screenshot or image here", source: null },
-    ],
   },
   5: {
     what: "RAG (Retrieval-Augmented Generation) poisoning attacks BLACKBUCK's drug formulary database rather than its system prompt or conversation. BLACKBUCK looks up drug dosages before answering clinical questions. An attacker who injects a fake formulary circular into the database causes BLACKBUCK to recommend a lethal Warfarin overdose — to every patient and doctor who asks.",
     why: "When BLACKBUCK retrieves a drug dosage guideline from its formulary database, it presents that information as clinical fact. LLMs have no independent verification mechanism — they cannot assess whether a retrieved document is a real medical guideline or a fabricated one. A poisoned formulary entry gets cited with the same authority as a genuine hospital protocol.",
-    realWorld: "In 2024, researchers demonstrated that RAG-enabled clinical AI assistants could be poisoned by injecting false entries into hospital formulary systems, drug databases, and clinical guideline repositories. The AI would recommend incorrect dosages with full clinical confidence — a patient safety catastrophe at scale.",
-    incidents: [
-      { image: null, caption: "Incident 1 — add screenshot or image here", source: null },
-      { image: null, caption: "Incident 2 — add screenshot or image here", source: null },
-      { image: null, caption: "Incident 3 — add screenshot or image here", source: null },
-    ],
   },
 }
 
@@ -144,56 +100,6 @@ export function LearnPhase({ labNumber, title, questions, onComplete }: LearnPha
           <div>
             <div className="text-slate-400 font-mono text-xs mb-1">WHY ARE LLMs VULNERABLE?</div>
             <p className="text-slate-200 text-sm leading-relaxed">{concept.why}</p>
-          </div>
-          <div className="bg-red-950/40 border border-red-800/40 rounded p-3">
-            <div className="text-red-400 font-mono text-xs mb-1">REAL-WORLD INCIDENT</div>
-            <p className="text-slate-300 text-sm leading-relaxed">{concept.realWorld}</p>
-          </div>
-
-          {/* Real-world incident media — 3 per lab, each with image + plain URL + QR code */}
-          <div className="space-y-3">
-            <div className="text-slate-500 font-mono text-xs tracking-widest">INCIDENT EVIDENCE</div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {concept.incidents.map((inc, i) => (
-                <div key={i} className="border border-dashed border-slate-600 rounded-lg overflow-hidden flex flex-col">
-                  {/* Image area */}
-                  {inc.image ? (
-                    <img src={inc.image} alt={inc.caption} className="w-full object-cover" />
-                  ) : (
-                    <div className="bg-slate-800/50 flex flex-col items-center justify-center p-5 min-h-[130px] flex-1">
-                      <div className="text-3xl mb-2 opacity-30">🖼</div>
-                      <div className="text-slate-600 font-mono text-xs text-center leading-relaxed">{inc.caption}</div>
-                    </div>
-                  )}
-                  {/* Source: plain-text URL + QR code */}
-                  <div className="px-3 py-3 bg-slate-800/80 border-t border-slate-700 space-y-2">
-                    {inc.source ? (
-                      <>
-                        <div className="text-slate-400 font-mono text-xs break-all leading-relaxed">{inc.source}</div>
-                        <div className="flex justify-center pt-1">
-                          <QRCodeSVG
-                            value={inc.source}
-                            size={80}
-                            bgColor="transparent"
-                            fgColor="#94a3b8"
-                            level="M"
-                          />
-                        </div>
-                      </>
-                    ) : (
-                      <div className="space-y-2">
-                        <div className="text-slate-700 font-mono text-xs">Add source URL here</div>
-                        <div className="flex justify-center">
-                          <div className="w-20 h-20 border border-dashed border-slate-700 rounded flex items-center justify-center">
-                            <span className="text-slate-700 text-xs font-mono">QR</span>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       )}

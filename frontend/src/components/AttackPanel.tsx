@@ -228,7 +228,7 @@ export function AttackPanel({ labNumber, module, moduleName, hintsUsed: _hintsUs
               LOAD EXAMPLE PAYLOAD (costs -{payloadCost}pts, disables bonus)
             </button>
           ) : null}
-          {module !== 'indirect_injection' && (
+          {module !== 'indirect_injection' && module !== 'rag_poisoning' && (
             <div className="flex gap-2 items-end">
               <textarea
                 ref={textareaRef}

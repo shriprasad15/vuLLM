@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1920" />
+<title>GPT Models & Cybersecurity Attacks Timeline</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    width: 1920px;
+    height: 1080px;
+    background: #f7f8fc;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
+    color: #fff;
+    padding: 18px 60px 14px;
+    display: flex;
+    align-items: baseline;
+    gap: 20px;
+    flex-shrink: 0;
+  }
+  .header h1 { font-size: 26px; font-weight: 700; letter-spacing: 0.5px; }
+  .header span { font-size: 14px; color: #a8b4c8; }
+
+  /* ── YEAR RULER ── */
+  .ruler-wrap {
+    background: #fff;
+    border-bottom: 2px solid #e0e4ef;
+    padding: 0 60px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .ruler {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+  .year-tick {
+    position: absolute;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    justify-content: center;
+    gap: 2px;
+  }
+  .year-tick .year-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #5a6480;
+    letter-spacing: 0.5px;
+  }
+  .year-tick .tick-line {
+    width: 1px;
+    height: 10px;
+    background: #c8cedf;
+  }
+
+  /* ── MAIN CONTENT ── */
+  .content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 0 60px;
+    gap: 0;
+  }
+
+  /* ── SECTION COMMON ── */
+  .section {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+
+  .section-label {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 8px 0 4px;
+    flex-shrink: 0;
+  }
+
+  .track {
+    position: relative;
+    flex: 1;
+  }
+
+  /* ── DIVIDER ── */
+  .divider {
+    height: 2px;
+    background: linear-gradient(90deg, #e0e4ef 0%, #b0badf 50%, #e0e4ef 100%);
+    flex-shrink: 0;
+    margin: 2px 0;
+  }
+
+  /* ── SPINE LINE ── */
+  .spine {
+    position: absolute;
+    height: 2px;
+    left: 0; right: 0;
+    background: #c8cedf;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  /* ── GPT MODELS section ── */
+  .models-section { flex: 1; }
+  .models-section .section-label { color: #0f3460; }
+  .models-section .spine { background: #0f3460; opacity: 0.25; }
+
+  /* ── ATTACKS section ── */
+  .attacks-section { flex: 1.4; }
+  .attacks-section .section-label { color: #c0392b; }
+  .attacks-section .spine { background: #c0392b; opacity: 0.2; }
+
+  /* ── MODEL CARD ── */
+  .model-card {
+    position: absolute;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    top: 0;
+    width: 110px;
+  }
+  .model-dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: #0f3460;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 2px #0f3460;
+    flex-shrink: 0;
+    z-index: 2;
+    position: relative;
+  }
+  .model-name {
+    font-size: 11px;
+    font-weight: 700;
+    color: #1a1a2e;
+    text-align: center;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+  .model-date {
+    font-size: 9.5px;
+    color: #7a84a0;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .model-desc {
+    font-size: 9px;
+    color: #9098b0;
+    text-align: center;
+    line-height: 1.3;
+    white-space: nowrap;
+  }
+
+  /* connector lines for model cards */
+  .model-card.above .connector {
+    order: -1;
+    width: 1px;
+    background: #b0badf;
+    flex-shrink: 0;
+  }
+  .model-card.below .connector {
+    width: 1px;
+    background: #b0badf;
+    flex-shrink: 0;
+  }
+
+  /* ── ATTACK CARD ── */
+  .attack-card {
+    position: absolute;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    width: 150px;
+  }
+  .attack-dot {
+    width: 11px; height: 11px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    flex-shrink: 0;
+    z-index: 2;
+  }
+  .attack-connector {
+    width: 1px;
+    background: currentColor;
+    opacity: 0.4;
+    flex-shrink: 0;
+  }
+  .attack-box {
+    background: #fff;
+    border-radius: 6px;
+    padding: 6px 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+    border-left: 3px solid currentColor;
+    width: 100%;
+  }
+  .attack-title {
+    font-size: 9.5px;
+    font-weight: 700;
+    line-height: 1.3;
+    color: #1a1a2e;
+  }
+  .attack-date {
+    font-size: 8.5px;
+    color: #9098b0;
+    margin-top: 2px;
+  }
+  .attack-detail {
+    font-size: 8px;
+    color: #5a6480;
+    margin-top: 2px;
+    line-height: 1.35;
+  }
+
+  .attack-card.above { flex-direction: column-reverse; }
+  .attack-card.above .attack-connector { order: 0; }
+  .attack-card.above .attack-dot { order: 1; }
+
+  /* ── LEGEND ── */
+  .legend {
+    display: flex;
+    gap: 24px;
+    padding: 6px 0 8px;
+    flex-shrink: 0;
+    align-items: center;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    color: #5a6480;
+  }
+  .legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 1.5px currentColor;
+    flex-shrink: 0;
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <h1>GPT Models &amp; AI-Enabled Cybersecurity Attacks</h1>
+  <span>2018 – 2025 · Key releases and documented threat incidents</span>
+</div>
+
+<!-- YEAR RULER -->
+<div class="ruler-wrap">
+  <div class="ruler" id="ruler"></div>
+</div>
+
+<!-- MAIN -->
+<div class="content">
+
+  <!-- GPT MODELS -->
+  <div class="section models-section">
+    <div class="section-label">GPT Model Releases</div>
+    <div class="track" id="models-track">
+      <div class="spine"></div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ATTACKS -->
+  <div class="section attacks-section">
+    <div class="section-label">Major AI-Enabled Cybersecurity Attacks &amp; Incidents</div>
+    <div class="track" id="attacks-track">
+      <div class="spine"></div>
+    </div>
+  </div>
+
+  <!-- LEGEND -->
+  <div class="legend">
+    <div class="legend-item">
+      <div class="legend-dot" style="color:#0f3460;"></div> GPT / LLM Model Release
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="color:#e74c3c;"></div> Phishing / Social Engineering
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="color:#e67e22;"></div> Malware / Code Generation
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="color:#8e44ad;"></div> Disinformation / Influence Op
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="color:#16a085;"></div> Jailbreak / Prompt Injection
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="color:#2980b9;"></div> Fraud / Deepfake
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── DATE MATH ──
+const START_YEAR = 2018;
+const END_YEAR   = 2026;
+const TOTAL_YEARS = END_YEAR - START_YEAR;
+
+function yearFrac(dateStr) {
+  // dateStr: "YYYY-MM"
+  const [y, m] = dateStr.split('-').map(Number);
+  return (y + (m - 1) / 12 - START_YEAR) / TOTAL_YEARS;
+}
+function pct(f) { return (f * 100).toFixed(4) + '%'; }
+
+// ── DATA ──
+const models = [
+  { date:'2018-06', name:'GPT-1',       desc:'117M params\nOpenAI' },
+  { date:'2019-02', name:'GPT-2',       desc:'1.5B params\nOpenAI' },
+  { date:'2020-05', name:'GPT-3',       desc:'175B params\nOpenAI' },
+  { date:'2021-01', name:'DALL·E 1',    desc:'Image gen\nOpenAI' },
+  { date:'2022-01', name:'InstructGPT', desc:'RLHF fine-tune\nOpenAI' },
+  { date:'2022-11', name:'ChatGPT',     desc:'GPT-3.5 public\nOpenAI' },
+  { date:'2023-03', name:'GPT-4',       desc:'Multimodal\nOpenAI' },
+  { date:'2023-07', name:'Llama 2',     desc:'Open weights\nMeta' },
+  { date:'2023-11', name:'Grok-1',      desc:'xAI' },
+  { date:'2024-02', name:'Gemini 1.5',  desc:'1M ctx window\nGoogle' },
+  { date:'2024-04', name:'Llama 3',     desc:'Open weights\nMeta' },
+  { date:'2024-05', name:'GPT-4o',      desc:'Omni model\nOpenAI' },
+  { date:'2024-09', name:'o1',          desc:'Reasoning\nOpenAI' },
+  { date:'2025-01', name:'DeepSeek-R1', desc:'Open weights\nDeepSeek' },
+  { date:'2025-03', name:'GPT-4.5',     desc:'OpenAI' },
+  { date:'2025-04', name:'Llama 4',     desc:'Open weights\nMeta' },
+  { date:'2025-05', name:'GPT-o3',      desc:'Reasoning\nOpenAI' },
+];
+
+// attack categories → colors
+const COLORS = {
+  phishing:  '#e74c3c',
+  malware:   '#e67e22',
+  disinfo:   '#8e44ad',
+  jailbreak: '#16a085',
+  fraud:     '#2980b9',
+};
+
+const attacks = [
+  { date:'2019-09', title:'GPT-2 Misuse Fears',           cat:'disinfo',  detail:'OpenAI staged release due to synthetic-text misuse risk; first documented AI-text propaganda experiments.' },
+  { date:'2020-07', title:'GPT-3 Phishing Demos',         cat:'phishing', detail:'Researchers demonstrate GPT-3 can write convincing spear-phishing emails at scale with minimal input.' },
+  { date:'2021-06', title:'AI-Written Malware PoC',       cat:'malware',  detail:'Security researchers show GPT-3 can generate functional exploit code and obfuscated scripts.' },
+  { date:'2022-04', title:'Deepfake CEO Fraud',           cat:'fraud',    detail:'$35M wire fraud: attackers cloned exec voice with AI to instruct bank transfer (Hong Kong).' },
+  { date:'2022-12', title:'ChatGPT Jailbreaks Emerge',    cat:'jailbreak',detail:'"DAN" and roleplay jailbreaks published days after ChatGPT launch; used to extract harmful content.' },
+  { date:'2023-01', title:'ChatGPT Malware Scripts',      cat:'malware',  detail:'CyberArk demonstrates ChatGPT generating polymorphic malware capable of evading AV detection.' },
+  { date:'2023-02', title:'WormGPT / FraudGPT',          cat:'phishing', detail:'Underground "uncensored" LLMs trained for phishing kit generation and BEC email drafting.' },
+  { date:'2023-05', title:'Prompt Injection Attacks',     cat:'jailbreak',detail:'Indirect prompt injection in LLM-integrated apps (Bing Chat, plugins) to exfiltrate data.' },
+  { date:'2023-07', title:'AI Influence Op (Meta)',       cat:'disinfo',  detail:'Meta removes 7,704-account Chinese network using AI-generated profile photos and GPT text.' },
+  { date:'2023-09', title:'MGM Resorts Vishing Attack',   cat:'fraud',    detail:'Scattered Spider used AI-assisted vishing to impersonate IT staff; $100M+ in damages.' },
+  { date:'2024-01', title:'OpenAI Election Disinfo',      cat:'disinfo',  detail:'OpenAI disrupts 20+ covert influence operations using ChatGPT for election-focused content.' },
+  { date:'2024-02', title:'$25M Deepfake Scam (HK)',     cat:'fraud',    detail:'Finance worker tricked by deepfake video call of CFO; transferred $25M to fraudsters.' },
+  { date:'2024-03', title:'GhostGPT Underground LLM',    cat:'malware',  detail:'No-guardrails LLM sold on dark web for malware authoring, RAT generation, ransomware.' },
+  { date:'2024-06', title:'AI-Powered Spear-Phishing',   cat:'phishing', detail:'IBM X-Force: LLM-crafted phishing emails achieve 11% higher click rate than human-written.' },
+  { date:'2024-08', title:'SolarWinds-style AI Recon',   cat:'malware',  detail:'APT groups documented using LLMs for target reconnaissance, CVE triage, and payload tuning.' },
+  { date:'2024-10', title:'OpenAI Threat Actor Report',  cat:'disinfo',  detail:'OpenAI confirms state-linked actors (Russia, China, Iran, N. Korea) misusing GPT-4 for ops.' },
+  { date:'2025-01', title:'Jailbreak via GPT-o1',        cat:'jailbreak',detail:'Researchers bypass GPT-o1 safety via chain-of-thought manipulation to produce CBRN guidance.' },
+  { date:'2025-03', title:'AI-Automated Phishing Kits',  cat:'phishing', detail:'Kaspersky reports fully automated LLM pipelines generating and A/B testing phishing pages.' },
+  { date:'2025-05', title:'Agent Hijacking Attacks',     cat:'jailbreak',detail:'Malicious prompt injection in autonomous AI agents (Claude, GPT-4o) causes unauthorized actions.' },
+];
+
+// ── RENDER RULER ──
+const ruler = document.getElementById('ruler');
+for (let y = START_YEAR; y <= END_YEAR; y++) {
+  const el = document.createElement('div');
+  el.className = 'year-tick';
+  el.style.left = pct((y - START_YEAR) / TOTAL_YEARS);
+  el.innerHTML = `<span class="year-label">${y}</span><span class="tick-line"></span>`;
+  ruler.appendChild(el);
+}
+
+// ── RENDER MODELS ──
+const mTrack = document.getElementById('models-track');
+const trackH = 130; // approximate track height; cards are positioned relative
+
+models.forEach((m, i) => {
+  const card = document.createElement('div');
+  card.className = 'model-card';
+  const leftPct = pct(yearFrac(m.date));
+
+  // alternate above/below spine
+  const isAbove = i % 2 === 0;
+  const connH = isAbove ? 30 + (i % 4) * 6 : 28 + (i % 3) * 6;
+
+  card.style.left = leftPct;
+
+  if (isAbove) {
+    // card top starts at 0, dot at bottom of card
+    card.style.top = '2px';
+    card.innerHTML = `
+      <div class="model-name">${m.name}</div>
+      <div class="model-date">${m.date}</div>
+      <div class="model-desc">${m.desc.replace(/\n/,'<br>')}</div>
+      <div class="connector" style="height:${connH}px"></div>
+      <div class="model-dot"></div>
+    `;
+    card.style.flexDirection = 'column';
+  } else {
+    // dot at top, text below
+    card.style.top = `calc(50% + 4px)`;
+    card.innerHTML = `
+      <div class="model-dot"></div>
+      <div class="connector" style="height:${connH}px"></div>
+      <div class="model-name">${m.name}</div>
+      <div class="model-date">${m.date}</div>
+      <div class="model-desc">${m.desc.replace(/\n/,'<br>')}</div>
+    `;
+  }
+
+  mTrack.appendChild(card);
+});
+
+// ── RENDER ATTACKS ──
+const aTrack = document.getElementById('attacks-track');
+
+attacks.forEach((a, i) => {
+  const card = document.createElement('div');
+  card.className = 'attack-card';
+  const color = COLORS[a.cat];
+  const leftPct = pct(yearFrac(a.date));
+  const connH = 18 + (i % 5) * 8;
+
+  card.style.left = leftPct;
+  card.style.color = color;
+
+  // alternate above/below spine
+  const isAbove = i % 2 !== 0;
+
+  if (isAbove) {
+    card.style.bottom = `calc(50% + 2px)`;
+    card.style.flexDirection = 'column-reverse';
+    card.innerHTML = `
+      <div class="attack-box" style="border-left-color:${color}">
+        <div class="attack-title">${a.title}</div>
+        <div class="attack-date">${a.date}</div>
+        <div class="attack-detail">${a.detail}</div>
+      </div>
+      <div class="attack-connector" style="height:${connH}px;background:${color}"></div>
+      <div class="attack-dot" style="background:${color};box-shadow:0 0 0 2px ${color}40"></div>
+    `;
+  } else {
+    card.style.top = `calc(50% + 2px)`;
+    card.innerHTML = `
+      <div class="attack-dot" style="background:${color};box-shadow:0 0 0 2px ${color}40"></div>
+      <div class="attack-connector" style="height:${connH}px;background:${color}"></div>
+      <div class="attack-box" style="border-left-color:${color}">
+        <div class="attack-title">${a.title}</div>
+        <div class="attack-date">${a.date}</div>
+        <div class="attack-detail">${a.detail}</div>
+      </div>
+    `;
+  }
+
+  aTrack.appendChild(card);
+});
+</script>
+</body>
+</html>

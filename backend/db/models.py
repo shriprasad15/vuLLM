@@ -12,6 +12,7 @@ class User(Base):
     google_id = Column(String, unique=True, nullable=True)
     email = Column(String, nullable=True)
     picture = Column(String, nullable=True)
+    pin_hash = Column(String, nullable=True)
 
 class Interaction(Base):
     __tablename__ = "interactions"

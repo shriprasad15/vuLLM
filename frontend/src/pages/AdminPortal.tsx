@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { adminGet, adminPost, adminDelete, adminGetSubmissions, WS_BASE } from '../lib/api'
+import { adminGet, adminPost, adminDelete, adminGetSubmissions, adminResetPin, WS_BASE } from '../lib/api'
 import { AdminLogin } from './AdminLogin'
 
 interface User { id: number; username: string; score: number; flags: number; last_prompt: string; last_seen: string }
@@ -78,6 +78,12 @@ export function AdminPortal() {
     loadData()
   }
 
+  async function resetUserPin(userId: number, username: string) {
+    if (!confirm(`Reset PIN for "${username}"? They can set a new PIN on next login.`)) return
+    await adminResetPin(userId, token)
+    alert(`PIN reset for ${username}.`)
+  }
+
   const solveRates = ['prompt_injection','jailbreak','indirect_injection','data_leakage','multi_turn','rag_poisoning'].map(m => ({
     module: m,
     attempts: interactions.filter(i => i.attack_type === m).length,
@@ -118,6 +124,13 @@ export function AdminPortal() {
                           <div className="text-amber-400 font-mono text-sm">{u.score}pts</div>
                           <div className="text-green-400 font-mono text-xs">{u.flags} flags</div>
                         </div>
+                        <button
+                          onClick={() => resetUserPin(u.id, u.username)}
+                          className="text-slate-400 hover:text-amber-300 font-mono text-xs border border-slate-700 hover:border-amber-600 px-2 py-1 rounded transition-colors"
+                          title="Reset PIN"
+                        >
+                          🔑
+                        </button>
                         <button
                           onClick={() => deleteUser(u.id, u.username)}
                           className="text-red-400 hover:text-red-300 font-mono text-xs border border-red-800 hover:border-red-500 px-2 py-1 rounded transition-colors"

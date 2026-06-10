@@ -19,14 +19,14 @@ function headers(extra: Record<string, string> = {}): Record<string, string> {
   return { ...NGROK_HEADERS, ...extra }
 }
 
-export async function registerPlayer(username: string) {
-  const r = await fetch(`${BASE}/players/register`, { method: 'POST', headers: headers({ 'Content-Type': 'application/json' }), body: JSON.stringify({ username }) })
+export async function checkUsername(username: string): Promise<{ exists: boolean }> {
+  const r = await fetch(`${BASE}/auth/player/check?username=${encodeURIComponent(username)}`, { headers: headers() })
   if (!r.ok) throw new Error(await r.text())
   return r.json()
 }
 
-export async function googleLogin(credential: string, username: string, role: string) {
-  const r = await fetch(`${BASE}/auth/google`, { method: 'POST', headers: headers({ 'Content-Type': 'application/json' }), body: JSON.stringify({ credential, username, role }) })
+export async function playerLogin(username: string, pin: string, role: string) {
+  const r = await fetch(`${BASE}/auth/player/login`, { method: 'POST', headers: headers({ 'Content-Type': 'application/json' }), body: JSON.stringify({ username, pin, role }) })
   if (!r.ok) throw new Error(await r.text())
   return r.json()
 }
@@ -60,6 +60,12 @@ export async function adminLogin(password: string) {
 
 export async function adminGet(path: string, token: string) {
   const r = await fetch(`${BASE}/admin${path}`, { headers: headers({ Authorization: `Bearer ${token}` }) })
+  return r.json()
+}
+
+export async function adminResetPin(userId: number, token: string) {
+  const r = await fetch(`${BASE}/admin/users/${userId}/reset-pin`, { method: 'POST', headers: headers({ Authorization: `Bearer ${token}` }) })
+  if (!r.ok) throw new Error(await r.text())
   return r.json()
 }
 

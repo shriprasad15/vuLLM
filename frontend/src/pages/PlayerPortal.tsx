@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useGame } from '../store/game'
-import { GoogleLogin } from '@react-oauth/google'
-import { googleLogin, getLabProgress, getLabContent, startLab } from '../lib/api'
+import { checkUsername, playerLogin, getLabProgress, getLabContent, startLab } from '../lib/api'
 import { LabSidebar } from '../components/LabSidebar'
 import { LearnPhase } from '../components/LearnPhase'
 import { ObjectiveCard } from '../components/ObjectiveCard'
@@ -27,6 +26,11 @@ const MODULE_NAMES: Record<number, string> = {
 
 export function PlayerPortal() {
   const { userId, username: _username, currentLab, labProgress, setUser, setCurrentLab, setLabProgress } = useGame()
+  // login flow state
+  const [loginStep, setLoginStep] = useState<'username' | 'pin'>('username')
+  const [usernameInput, setUsernameInput] = useState('')
+  const [pinInput, setPinInput] = useState('')
+  const [isNewUser, setIsNewUser] = useState(false)
   const [regError, setRegError] = useState('')
   const [regLoading, setRegLoading] = useState(false)
   const [selectedRole, setSelectedRole] = useState<'patient' | 'doctor' | 'admin'>('patient')
@@ -91,21 +95,35 @@ export function PlayerPortal() {
     }
   }
 
-  async function handleGoogleSuccess(credentialResponse: { credential?: string }) {
-    const idToken = credentialResponse.credential
-    if (!idToken) { setRegError('Google sign-in failed — no token received. Try again.'); return }
-    setRegLoading(true)
-    setRegError('')
+  async function handleUsernameNext() {
+    const name = usernameInput.trim()
+    if (!name || name.length < 2) { setRegError('Username must be at least 2 characters'); return }
+    setRegLoading(true); setRegError('')
     try {
-      // base64url → base64 (add padding, replace URL-safe chars)
-      const b64 = idToken.split('.')[1].replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(idToken.split('.')[1].length / 4) * 4, '=')
-      const payload = JSON.parse(atob(b64))
-      const username = (payload.name || payload.email || 'agent').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 30) || 'agent'
-      const data = await googleLogin(idToken, username, selectedRole)
+      const { exists } = await checkUsername(name)
+      setIsNewUser(!exists)
+      setLoginStep('pin')
+    } catch (e: any) {
+      setRegError(e.message || 'Network error')
+    } finally {
+      setRegLoading(false)
+    }
+  }
+
+  async function handlePinSubmit() {
+    if (!/^\d{4}$/.test(pinInput)) { setRegError('PIN must be exactly 4 digits'); return }
+    setRegLoading(true); setRegError('')
+    try {
+      const data = await playerLogin(usernameInput.trim(), pinInput, selectedRole)
       setUser(data.user_id, data.username, data.session_id, selectedRole)
     } catch (e: any) {
       const msg = e.message || ''
-      setRegError(msg.includes('409') ? 'Sign-in failed — try again' : 'Sign-in failed: ' + msg)
+      if (msg.includes('401') || msg.includes('Incorrect')) {
+        setRegError('Incorrect PIN. Try again or ask your instructor to reset it.')
+      } else {
+        setRegError(msg)
+      }
+      setPinInput('')
     } finally {
       setRegLoading(false)
     }
@@ -267,33 +285,83 @@ export function PlayerPortal() {
 
                 <div className="h-px bg-slate-800" />
 
-                {/* Google sign-in */}
-                <div className="flex flex-col items-center gap-3">
-                  {regLoading ? (
-                    <div className="flex items-center gap-2 text-slate-400 font-mono text-sm py-2">
-                      <div className="w-3 h-3 border border-amber-400 border-t-transparent rounded-full animate-spin" />
-                      Authenticating...
-                    </div>
-                  ) : (
-                    <GoogleLogin
-                      onSuccess={handleGoogleSuccess}
-                      onError={() => setRegError('Google sign-in failed. Try again.')}
-                      theme="filled_black"
-                      size="large"
-                      text="signin_with"
-                      shape="rectangular"
-                      width="280"
+                {/* Login flow */}
+                {loginStep === 'username' ? (
+                  <div className="space-y-3">
+                    <div className="text-slate-500 font-mono text-xs tracking-widest">AGENT CODENAME</div>
+                    <input
+                      value={usernameInput}
+                      onChange={e => { setUsernameInput(e.target.value); setRegError('') }}
+                      onKeyDown={e => e.key === 'Enter' && handleUsernameNext()}
+                      placeholder="Enter your codename"
+                      autoFocus
+                      className="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-3 text-green-300 font-mono text-sm focus:outline-none focus:border-amber-400 placeholder-slate-600"
                     />
-                  )}
-                  {regError && (
-                    <div className="flex items-center gap-2 text-red-400 font-mono text-xs bg-red-950/30 border border-red-900/50 rounded px-3 py-2 w-full">
-                      <span>⚠</span> {regError}
+                    {regError && (
+                      <div className="flex items-center gap-2 text-red-400 font-mono text-xs bg-red-950/30 border border-red-900/50 rounded px-3 py-2">
+                        <span>⚠</span> {regError}
+                      </div>
+                    )}
+                    <button
+                      onClick={handleUsernameNext}
+                      disabled={regLoading}
+                      className="w-full bg-amber-400 hover:bg-amber-300 disabled:opacity-50 text-black font-bold font-mono py-3 rounded-lg transition-colors flex items-center justify-center gap-2"
+                    >
+                      {regLoading ? <><div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin" /> Checking...</> : 'CONTINUE →'}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="text-slate-500 font-mono text-xs tracking-widest">
+                        {isNewUser ? 'SET YOUR 4-DIGIT PIN' : 'ENTER YOUR PIN'}
+                      </div>
+                      <button onClick={() => { setLoginStep('username'); setPinInput(''); setRegError('') }}
+                        className="text-slate-600 hover:text-slate-400 font-mono text-xs">
+                        ← back
+                      </button>
                     </div>
-                  )}
-                </div>
+                    <div className="bg-slate-800/50 border border-slate-700 rounded-lg px-4 py-2">
+                      <span className="text-amber-300 font-mono text-sm">{usernameInput}</span>
+                      <span className="text-slate-500 font-mono text-xs ml-2">
+                        {isNewUser ? '— new agent' : '— returning agent'}
+                      </span>
+                    </div>
+                    {isNewUser && (
+                      <p className="text-slate-500 font-mono text-xs leading-relaxed">
+                        Choose a 4-digit PIN. You'll need it to log back in. If you forget it, ask your instructor to reset it.
+                      </p>
+                    )}
+                    <input
+                      value={pinInput}
+                      onChange={e => { if (/^\d{0,4}$/.test(e.target.value)) { setPinInput(e.target.value); setRegError('') } }}
+                      onKeyDown={e => e.key === 'Enter' && pinInput.length === 4 && handlePinSubmit()}
+                      placeholder="••••"
+                      type="password"
+                      inputMode="numeric"
+                      maxLength={4}
+                      autoFocus
+                      className="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-3 text-green-300 font-mono text-2xl tracking-[0.5em] text-center focus:outline-none focus:border-amber-400 placeholder-slate-700"
+                    />
+                    {regError && (
+                      <div className="flex items-center gap-2 text-red-400 font-mono text-xs bg-red-950/30 border border-red-900/50 rounded px-3 py-2">
+                        <span>⚠</span> {regError}
+                      </div>
+                    )}
+                    <button
+                      onClick={handlePinSubmit}
+                      disabled={regLoading || pinInput.length !== 4}
+                      className="w-full bg-amber-400 hover:bg-amber-300 disabled:opacity-50 text-black font-bold font-mono py-3 rounded-lg transition-colors flex items-center justify-center gap-2"
+                    >
+                      {regLoading
+                        ? <><div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin" /> {isNewUser ? 'Creating...' : 'Verifying...'}</>
+                        : isNewUser ? 'CREATE ACCOUNT →' : 'BEGIN ASSIGNMENT →'}
+                    </button>
+                  </div>
+                )}
 
-                <div className="text-center text-slate-600 font-mono text-xs">
-                  Progress is saved — re-authenticate to resume
+                <div className="text-center text-slate-700 font-mono text-xs">
+                  Progress is saved — log back in with your PIN to resume
                 </div>
               </div>
             </div>

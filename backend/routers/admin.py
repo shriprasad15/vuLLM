@@ -101,6 +101,18 @@ def delete_user(user_id: int, db: Session = Depends(get_db), _=Depends(get_admin
         raise HTTPException(status_code=404, detail="User not found")
     return {"message": "User deleted"}
 
+
+@router.post("/users/{user_id}/reset-pin")
+def reset_pin(user_id: int, db: Session = Depends(get_db), _=Depends(get_admin)):
+    """Admin resets a user's PIN — they can set a new one on next login attempt."""
+    from passlib.context import CryptContext
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    user.pin_hash = None
+    db.commit()
+    return {"message": f"PIN reset for {user.username}. They can set a new PIN on next login."}
+
 @router.get("/global")
 def get_global(db: Session = Depends(get_db), _=Depends(get_admin)):
     g = db.query(GlobalSettings).first()

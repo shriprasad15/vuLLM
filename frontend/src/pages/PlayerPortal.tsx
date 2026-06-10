@@ -33,7 +33,7 @@ export function PlayerPortal() {
   const [isNewUser, setIsNewUser] = useState(false)
   const [regError, setRegError] = useState('')
   const [regLoading, setRegLoading] = useState(false)
-  const [selectedRole, setSelectedRole] = useState<'patient' | 'doctor' | 'admin'>('patient')
+  const selectedRole = 'patient'
   const [labContent, setLabContent] = useState<any>(null)
   const [localPhase, setLocalPhase] = useState(1)
   const [hintsUsed, setHintsUsed] = useState<(number | string)[]>([])
@@ -248,39 +248,13 @@ export function PlayerPortal() {
 
                 <div className="h-px bg-slate-800" />
 
-                {/* Role selector */}
-                <div className="space-y-2">
-                  <div className="text-slate-500 font-mono text-xs tracking-widest">ACCESS ROLE</div>
-                  {([
-                    { value: 'patient', label: 'PATIENT',
-                      desc: 'Appointments · Own records',
-                      icon: '🏥', accent: 'border-blue-600 bg-blue-900/20 text-blue-300' },
-                    { value: 'doctor',  label: 'DOCTOR',
-                      desc: 'Assigned patients · Prescriptions',
-                      icon: '🩺', accent: 'border-green-600 bg-green-900/20 text-green-300' },
-                    { value: 'admin',   label: 'ADMIN',
-                      desc: 'All records · Staff management',
-                      icon: '🔑', accent: 'border-amber-500 bg-amber-900/20 text-amber-300' },
-                  ] as const).map(r => (
-                    <button
-                      key={r.value}
-                      onClick={() => setSelectedRole(r.value)}
-                      className={`w-full flex items-center gap-3 p-3 rounded-lg border transition-all ${
-                        selectedRole === r.value
-                          ? r.accent
-                          : 'border-slate-700 text-slate-400 hover:border-slate-600 hover:bg-slate-800/50'
-                      }`}
-                    >
-                      <span className="text-base flex-shrink-0">{r.icon}</span>
-                      <div className="text-left flex-1 min-w-0">
-                        <div className="font-mono font-bold text-xs">{r.label}</div>
-                        <div className="font-mono text-xs opacity-60 truncate">{r.desc}</div>
-                      </div>
-                      {selectedRole === r.value && (
-                        <div className="w-1.5 h-1.5 rounded-full bg-current flex-shrink-0" />
-                      )}
-                    </button>
-                  ))}
+                {/* Role — patient only */}
+                <div className="flex items-center gap-3 p-3 rounded-lg border border-blue-600 bg-blue-900/20 text-blue-300">
+                  <span className="text-base">🏥</span>
+                  <div>
+                    <div className="font-mono font-bold text-xs">PATIENT</div>
+                    <div className="font-mono text-xs opacity-60">Appointments · Own records</div>
+                  </div>
                 </div>
 
                 <div className="h-px bg-slate-800" />

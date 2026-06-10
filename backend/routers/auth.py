@@ -8,7 +8,8 @@ from db.database import get_db
 from db.models import User
 
 router = APIRouter(tags=["auth"])
-pwd_context = CryptContext(schemes=["bcrypt"])
+# sha256_crypt works reliably across all bcrypt/passlib versions for short PINs
+pwd_context = CryptContext(schemes=["sha256_crypt"], deprecated="auto")
 JWT_SECRET = os.getenv("JWT_SECRET", "supersecretkey")
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "changeme")
 

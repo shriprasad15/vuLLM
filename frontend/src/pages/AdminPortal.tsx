@@ -93,7 +93,7 @@ export function AdminPortal() {
   return (
     <div className="min-h-screen bg-slate-950 text-white">
       <header className="bg-slate-900 border-b border-slate-700 px-6 py-3 flex items-center justify-between">
-        <span className="text-amber-400 font-mono font-bold">vuLLM ADMIN</span>
+        <span className="text-amber-400 font-mono font-bold">vulAI ADMIN</span>
         <div className="flex gap-2">
           {(['monitor','analytics','controls'] as const).map(t => (
             <button key={t} onClick={() => setTab(t)}

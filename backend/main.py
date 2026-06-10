@@ -9,7 +9,7 @@ from routers import pdf
 
 models.Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="Operation: vuLLM")
+app = FastAPI(title="Operation: vulAI")
 
 app.add_middleware(
     CORSMiddleware,

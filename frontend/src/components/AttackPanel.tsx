@@ -16,7 +16,7 @@ interface AttackPanelProps {
 interface Message { role: 'user' | 'assistant'; content: string }
 
 function extractFlag(text: string): string | null {
-  const match = text.match(/vuLLM\{[^}]+\}/)
+  const match = text.match(/vulAI{[^}]+\}/)
   return match ? match[0] : null
 }
 

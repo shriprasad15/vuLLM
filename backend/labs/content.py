@@ -2,7 +2,7 @@ LAB_CONTENT = {
     1: {
         "title": "Prompt Injection",
         "attack_module": "prompt_injection",
-        "flag": "vuLLM{pr0mpt_1nj3ct10n_succ3ss}",
+        "flag": "vulAI{pr0mpt_1nj3ct10n_succ3ss}",
         "questions": [
             {
                 "id": "1a",
@@ -40,7 +40,7 @@ LAB_CONTENT = {
     2: {
         "title": "Jailbreak",
         "attack_module": "jailbreak",
-        "flag": "vuLLM{j41lbr34k_p3rs0n4_sw4p}",
+        "flag": "vulAI{j41lbr34k_p3rs0n4_sw4p}",
         "questions": [
             {
                 "id": "2a",
@@ -78,7 +78,7 @@ LAB_CONTENT = {
     3: {
         "title": "Indirect Prompt Injection",
         "attack_module": "indirect_injection",
-        "flag": "vuLLM{1nd1r3ct_1nj3ct10n_h1dd3n}",
+        "flag": "vulAI{1nd1r3ct_1nj3ct10n_h1dd3n}",
         "questions": [
             {
                 "id": "3a",
@@ -116,7 +116,7 @@ LAB_CONTENT = {
     4: {
         "title": "Data Leakage",
         "attack_module": "data_leakage",
-        "flag": "vuLLM{d4t4_l34k4g3_pr0mpt_3xp0s3d}",
+        "flag": "vulAI{d4t4_l34k4g3_pr0mpt_3xp0s3d}",
         "questions": [
             {
                 "id": "4a",
@@ -154,7 +154,7 @@ LAB_CONTENT = {
     5: {
         "title": "RAG Poisoning",
         "attack_module": "rag_poisoning",
-        "flag": "vuLLM{r4g_p01s0n_4adh44r_f4k3}",
+        "flag": "vulAI{r4g_p01s0n_4adh44r_f4k3}",
         "questions": [
             {
                 "id": "5a",

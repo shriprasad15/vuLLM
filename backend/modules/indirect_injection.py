@@ -20,13 +20,13 @@ async def run(prompt: str, history: list[dict], defense_tier: int = 0, mode: str
     blocked, reason, safe_prompt = await apply_defense(prompt, defense_tier)
     if blocked:
         return AttackResult(response=f"🛡️ BLOCKED by defense tier {defense_tier}: {reason}", success=False,
-                            flag_earned=False, flag_name="vuLLM{1nd1r3ct_1nj3ct10n_h1dd3n}", blocked=True, block_reason=reason)
+                            flag_earned=False, flag_name="vulAI{1nd1r3ct_1nj3ct10n_h1dd3n}", blocked=True, block_reason=reason)
     messages = history + [{"role": "user", "content": safe_prompt or prompt}]
     response = await chat(messages, get_system_prompt(mode, role), mode, module="indirect_injection")
     success = await judge_attack("indirect_injection", prompt, response)
     return AttackResult(
         response=response, success=success, flag_earned=success,
-        flag_name="vuLLM{1nd1r3ct_1nj3ct10n_h1dd3n}",
+        flag_name="vulAI{1nd1r3ct_1nj3ct10n_h1dd3n}",
         debrief=await generate_debrief("indirect_injection", prompt, response) if success else {},
     )
 

@@ -34,7 +34,7 @@ export function LabSidebar({ onSelectLab }: LabSidebarProps) {
   return (
     <aside className="w-56 flex-shrink-0 bg-slate-900 border-r border-slate-700 flex flex-col h-screen sticky top-0">
       <div className="px-4 py-4 border-b border-slate-700">
-        <div className="text-amber-400 font-mono text-xs tracking-widest mb-1">OPERATION: vuLLM</div>
+        <div className="text-amber-400 font-mono text-xs tracking-widest mb-1">OPERATION: vulAI</div>
         <div className="text-white font-mono text-sm font-bold truncate">{username ?? 'AGENT'}</div>
         <div className="text-green-400 font-mono text-xs mt-1">{totalScore} pts total</div>
       </div>

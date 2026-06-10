@@ -10,13 +10,13 @@ async def run(prompt: str, history: list[dict], defense_tier: int = 0, mode: str
     blocked, reason, safe_prompt = await apply_defense(prompt, defense_tier)
     if blocked:
         return AttackResult(response=f"🛡️ BLOCKED by defense tier {defense_tier}: {reason}", success=False,
-                            flag_earned=False, flag_name="vuLLM{d4t4_l34k4g3_pr0mpt_3xp0s3d}", blocked=True, block_reason=reason)
+                            flag_earned=False, flag_name="vulAI{d4t4_l34k4g3_pr0mpt_3xp0s3d}", blocked=True, block_reason=reason)
     messages = history + [{"role": "user", "content": safe_prompt or prompt}]
     response = await chat(messages, get_system_prompt(mode, role), mode, module="data_leakage")
     success = await judge_attack("data_leakage", prompt, response)
     return AttackResult(
         response=response, success=success, flag_earned=success,
-        flag_name="vuLLM{d4t4_l34k4g3_pr0mpt_3xp0s3d}",
+        flag_name="vulAI{d4t4_l34k4g3_pr0mpt_3xp0s3d}",
         debrief=await generate_debrief("data_leakage", prompt, response) if success else {},
     )
 

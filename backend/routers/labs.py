@@ -109,7 +109,7 @@ def get_lab_content(lab_number: int, user_id: int, db: Session = Depends(get_db)
         "title": lab["title"],
         "mission": lab["mission"],
         "questions": questions,
-        "flag_format": "vuLLM{...}",
+        "flag_format": "vulAI{...}",
         "hint_count": len(lab["hints"]),
         "hint_costs": lab["hint_costs"],
         "payload_cost": lab["payload_cost"],

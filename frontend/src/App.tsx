@@ -14,7 +14,7 @@ function LeaderboardPage() {
   )
 }
 
-// In production (GitHub Pages), app is served at /vuLLM/ — use that as basename.
+// In production (GitHub Pages), app is served at /vuLLM/ — basename stays /vuLLM (repo name unchanged).
 // In dev (localhost), no basename needed.
 const basename = import.meta.env.BASE_URL || '/'
 

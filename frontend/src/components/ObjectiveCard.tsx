@@ -42,7 +42,7 @@ export function ObjectiveCard({ labNumber, title, mission, hintCosts, payloadCos
         <p className="text-white font-mono text-sm leading-relaxed">{mission}</p>
         <div className="mt-4 pt-4 border-t border-slate-700">
           <div className="text-slate-400 font-mono text-xs mb-1">FLAG FORMAT</div>
-          <code className="text-green-400 font-mono text-sm bg-slate-800 px-2 py-1 rounded">{'vuLLM{...}'}</code>
+          <code className="text-green-400 font-mono text-sm bg-slate-800 px-2 py-1 rounded">{'vulAI{...}'}</code>
           <p className="text-slate-500 font-mono text-xs mt-2">When your attack succeeds, the flag will appear in BLACKBUCK's response. Copy it and submit it to complete the lab.</p>
         </div>
       </div>

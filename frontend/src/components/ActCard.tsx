@@ -34,7 +34,7 @@ export function ActCard({ act, title, briefing, onBegin }: ActCardProps) {
   return (
     <div className={`min-h-screen bg-gradient-to-br ${ACT_COLORS[act] ?? 'from-slate-900 to-slate-700'} flex items-center justify-center p-8`}>
       <div className="max-w-2xl w-full">
-        <div className="text-amber-400 text-sm font-mono tracking-widest mb-2">OPERATION: vuLLM — ACT {act}</div>
+        <div className="text-amber-400 text-sm font-mono tracking-widest mb-2">OPERATION: vulAI — ACT {act}</div>
         <h1 className="text-white text-4xl font-bold mb-6 font-mono">{title}</h1>
         <div className="bg-black/40 border border-amber-400/30 rounded-lg p-6 mb-8">
           <p className="text-green-400 font-mono text-sm leading-relaxed whitespace-pre-wrap">{displayed}<span className="animate-pulse">_</span></p>

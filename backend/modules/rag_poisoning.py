@@ -49,7 +49,7 @@ async def run(prompt: str, history: list[dict], defense_tier: int = 0, mode: str
     blocked, reason, safe_prompt = await apply_defense(prompt, defense_tier)
     if blocked:
         return AttackResult(response=f"🛡️ BLOCKED by defense tier {defense_tier}: {reason}", success=False,
-                            flag_earned=False, flag_name="vuLLM{r4g_p01s0n_4adh44r_f4k3}", blocked=True, block_reason=reason)
+                            flag_earned=False, flag_name="vulAI{r4g_p01s0n_4adh44r_f4k3}", blocked=True, block_reason=reason)
 
     if use_poisoned:
         system = POISONED_SYSTEM_REALISTIC if mode == "realistic" else POISONED_SYSTEM_DEMO
@@ -70,7 +70,7 @@ async def run(prompt: str, history: list[dict], defense_tier: int = 0, mode: str
 
     return AttackResult(
         response=response, success=success, flag_earned=success,
-        flag_name="vuLLM{r4g_p01s0n_4adh44r_f4k3}",
+        flag_name="vulAI{r4g_p01s0n_4adh44r_f4k3}",
         debrief=debrief,
     )
 

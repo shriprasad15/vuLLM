@@ -189,7 +189,7 @@ export function PlayerPortal() {
         <div className="relative border-b border-slate-800/60 px-8 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-            <span className="text-slate-500 font-mono text-xs tracking-widest">OPERATION: vuLLM — LIVE</span>
+            <span className="text-slate-500 font-mono text-xs tracking-widest">OPERATION: vulAI — LIVE</span>
           </div>
           <div className="text-slate-600 font-mono text-xs">AAROGYA GENERAL HOSPITAL // AI SECURITY LAB</div>
         </div>
@@ -202,7 +202,7 @@ export function PlayerPortal() {
                 <div className="text-amber-400/70 font-mono text-xs tracking-[0.3em] uppercase">Classified Briefing — Eyes Only</div>
                 <h1 className="text-white font-mono font-bold leading-none" style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)' }}>
                   OPERATION<br />
-                  <span className="text-amber-400">vuLLM</span>
+                  <span className="text-amber-400">vulAI</span>
                 </h1>
               </div>
 
@@ -364,7 +364,7 @@ export function PlayerPortal() {
           <div className="max-w-2xl w-full space-y-8">
             <div className="text-center space-y-3">
               <div className="text-6xl">🏆</div>
-              <div className="text-amber-400 font-mono text-xs tracking-widest">OPERATION: vuLLM</div>
+              <div className="text-amber-400 font-mono text-xs tracking-widest">OPERATION: vulAI</div>
               <h1 className="text-white font-mono text-4xl font-bold">PART A COMPLETE</h1>
               <p className="text-slate-400 font-mono text-sm">You have successfully completed all 6 offensive labs.</p>
             </div>
@@ -480,7 +480,7 @@ export function PlayerPortal() {
               </div>
               <div className="bg-slate-900 border border-slate-700 rounded-lg p-4">
                 <div className="text-slate-400 font-mono text-xs tracking-widest mb-2">FLAG FORMAT</div>
-                <code className="text-green-400 font-mono text-sm bg-slate-800 px-2 py-1 rounded block">{'vuLLM{...}'}</code>
+                <code className="text-green-400 font-mono text-sm bg-slate-800 px-2 py-1 rounded block">{'vulAI{...}'}</code>
                 <p className="text-slate-500 font-mono text-xs mt-2">When your attack succeeds, the flag appears in BLACKBUCK's response. Copy it and submit it.</p>
               </div>
               <div className="space-y-2">
